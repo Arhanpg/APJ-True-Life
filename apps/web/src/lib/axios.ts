@@ -1,35 +1,19 @@
-import axios from 'axios';
-import { auth } from './firebase';
+import axios from "axios";
 
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1',
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
+export const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.apjtruelife.com",
+  headers: { "Content-Type": "application/json" },
 });
 
-api.interceptors.request.use(async (config) => {
-  const user = auth.currentUser;
-  if (user) {
-    const token = await user.getIdToken();
-    config.headers.Authorization = `Bearer ${token}`;
-    config.headers['X-Client-Version'] = '1.0.0';
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("apj_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      const user = auth.currentUser;
-      if (user) {
-        await user.getIdToken(true);
-        return api(error.config);
-      }
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
-
-export default api;

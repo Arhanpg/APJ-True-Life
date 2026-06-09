@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  @apply bg-background text-onsurface font-sans antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.fc .fc-toolbar-title {
+  @apply text-xl font-semibold;
+  color: #004324;
+}
+
+.fc .fc-button-primary {
+  background-color: #1A5C38 !important;
+  border-color: #1A5C38 !important;
+}
+
+.fc .fc-button-primary:hover {
+  background-color: #004324 !important;
+  border-color: #004324 !important;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: #C0C9BF;
+}
+
+:focus-visible {
+  outline: 2px solid #1A5C38;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
