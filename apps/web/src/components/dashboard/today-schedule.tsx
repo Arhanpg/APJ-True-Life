@@ -3,30 +3,28 @@ import { StatusBadge } from "@/components/shared/status-badge";
 
 export function TodaySchedule() {
   return (
-    <div className="rounded-2xl border border-outlinevariant bg-white p-6 shadow-card">
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-primary-dark">Today&apos;s Schedule</h3>
-          <p className="text-sm text-muted">All appointments and clinical reviews for today.</p>
-        </div>
+    <div className="rounded-2xl border border-[#C0C9BF] bg-white p-6 shadow-sm">
+      <div className="mb-5">
+        <h3 className="text-lg font-semibold text-[#004324]">Today's Schedule</h3>
+        <p className="mt-1 text-sm text-[#404941]">All appointments and clinical sessions for today.</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-outlinevariant text-xs uppercase tracking-wider text-muted">
-              <th className="pb-3 pr-4">Time</th>
-              <th className="pb-3 pr-4">Patient</th>
-              <th className="pb-3 pr-4">Purpose</th>
-              <th className="pb-3">Status</th>
+            <tr className="border-b border-[#E1F2E8] text-[#404941]">
+              <th className="pb-3 font-medium">Time</th>
+              <th className="pb-3 font-medium">Patient</th>
+              <th className="pb-3 font-medium">Purpose</th>
+              <th className="pb-3 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody>
-            {todaySchedule.map((slot, i) => (
-              <tr key={i} className="border-b border-outlinevariant/50 last:border-0">
-                <td className="py-4 pr-4 font-mono text-xs">{slot.time}</td>
-                <td className="py-4 pr-4 font-medium text-onsurface">{slot.patient}</td>
-                <td className="py-4 pr-4 text-muted">{slot.purpose}</td>
-                <td className="py-4">
+          <tbody className="divide-y divide-[#E1F2E8]">
+            {todaySchedule.map((slot) => (
+              <tr key={`${slot.time}-${slot.patient}`}>
+                <td className="py-3.5 font-mono text-xs text-[#404941]">{slot.time}</td>
+                <td className="py-3.5 font-medium text-[#111E18]">{slot.patient}</td>
+                <td className="py-3.5 text-[#404941]">{slot.purpose}</td>
+                <td className="py-3.5">
                   <StatusBadge label={slot.status} />
                 </td>
               </tr>

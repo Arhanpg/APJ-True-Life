@@ -8,21 +8,23 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   display: "swap",
 });
+
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
   display: "swap",
 });
+
 const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains",
   display: "swap",
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "APJ TRUE LIFE | Clinical Dashboard",
-  description:
-    "Doctor-facing Ayurvedic clinical dashboard for APJ TRUE LIFE Medical Centre. Manage patients, treatment plans, appointments, and chat.",
+  title: "APJ TRUE LIFE | Doctor Dashboard",
+  description: "Clinical management dashboard for APJ TRUE LIFE Ayurvedic Medical Centre",
 };
 
 export default function RootLayout({
@@ -36,6 +38,7 @@ export default function RootLayout({
         className={`${
           dmSans.variable
         } ${playfair.variable} ${jetbrains.variable} font-sans antialiased`}
+        suppressHydrationWarning
       >
         <QueryProvider>{children}</QueryProvider>
       </body>

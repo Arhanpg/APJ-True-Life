@@ -1,52 +1,60 @@
 "use client";
 
-const fields = [
-  { name: "fullName", label: "Full Name", type: "text", required: true },
-  { name: "phone", label: "Phone Number (+91)", type: "tel", required: true },
-  { name: "email", label: "Email Address", type: "email", required: false },
-  { name: "dob", label: "Date of Birth", type: "date", required: true },
-  { name: "gender", label: "Gender", type: "select", required: true, options: ["Male", "Female", "Other"] },
-  { name: "bloodGroup", label: "Blood Group", type: "select", required: false, options: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"] },
-  { name: "address", label: "Address", type: "text", required: false },
-  { name: "emergencyContact", label: "Emergency Contact", type: "tel", required: false },
-  { name: "prakriti", label: "Prakriti", type: "select", required: false, options: ["Vata", "Pitta", "Kapha", "Vata-Pitta", "Pitta-Kapha", "Vata-Kapha"] },
+const fields: { label: string; type?: string; col?: string }[] = [
+  { label: "Full Name" },
+  { label: "Email Address", type: "email" },
+  { label: "Phone Number", type: "tel" },
+  { label: "Date of Birth", type: "date" },
+  { label: "Gender" },
+  { label: "Blood Group" },
+  { label: "Address", col: "full" },
+  { label: "Emergency Contact", type: "tel" },
+  { label: "Prakriti (Dosha)" },
 ];
 
 export function PatientForm() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="grid gap-4 md:grid-cols-2">
-        {fields.map((field) => (
-          <label key={field.name} className="block space-y-2 text-sm font-medium text-primary-dark">
-            <span>
-              {field.label}
-              {field.required && <span className="ml-1 text-error">*</span>}
-            </span>
-            {field.type === "select" ? (
-              <select className="w-full rounded-xl border border-outlinevariant px-4 py-3 font-normal text-onsurface outline-none focus:ring-2 focus:ring-primary">
-                <option value="">Select {field.label}</option>
-                {field.options?.map((opt) => (
-                  <option key={opt}>{opt}</option>
-                ))}
-              </select>
-            ) : (
+        {fields
+          .filter((f) => f.col !== "full")
+          .map((f) => (
+            <label key={f.label} className="block space-y-1.5 text-sm font-medium text-[#111E18]">
+              {f.label}
               <input
-                type={field.type}
-                className="w-full rounded-xl border border-outlinevariant px-4 py-3 font-normal outline-none focus:ring-2 focus:ring-primary"
-                placeholder={`Enter ${field.label.toLowerCase()}`}
+                type={f.type ?? "text"}
+                placeholder={`Enter ${f.label.toLowerCase()}`}
+                className="mt-1 block w-full rounded-xl border border-[#C0C9BF] px-4 py-2.5 font-normal text-[#111E18] outline-none transition focus:border-[#1A5C38] focus:ring-2 focus:ring-[#1A5C38]/20"
               />
-            )}
+            </label>
+          ))}
+      </div>
+      {fields
+        .filter((f) => f.col === "full")
+        .map((f) => (
+          <label key={f.label} className="block space-y-1.5 text-sm font-medium text-[#111E18]">
+            {f.label}
+            <input
+              type="text"
+              placeholder={`Enter ${f.label.toLowerCase()}`}
+              className="mt-1 block w-full rounded-xl border border-[#C0C9BF] px-4 py-2.5 font-normal text-[#111E18] outline-none transition focus:border-[#1A5C38] focus:ring-2 focus:ring-[#1A5C38]/20"
+            />
           </label>
         ))}
-      </div>
-      <label className="block space-y-2 text-sm font-medium text-primary-dark">
-        <span>Medical Notes &amp; Allergies</span>
+      <label className="block space-y-1.5 text-sm font-medium text-[#111E18]">
+        Medical Notes
         <textarea
-          rows={4}
-          className="w-full rounded-xl border border-outlinevariant px-4 py-3 font-normal outline-none focus:ring-2 focus:ring-primary"
-          placeholder="Known allergies, prior Ayurvedic assessments, doctor observations…"
+          rows={5}
+          placeholder="Known allergies, previous conditions, Ayurvedic assessment notes..."
+          className="mt-1 block w-full resize-none rounded-xl border border-[#C0C9BF] px-4 py-2.5 font-normal text-[#111E18] outline-none transition focus:border-[#1A5C38] focus:ring-2 focus:ring-[#1A5C38]/20"
         />
       </label>
+      <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <input type="checkbox" id="consent" className="h-4 w-4 accent-[#1A5C38]" />
+        <label htmlFor="consent" className="text-sm text-[#404941]">
+          I confirm that I have obtained the patient's consent to collect and process their health data as per the DPDP Act 2023.
+        </label>
+      </div>
     </div>
   );
 }

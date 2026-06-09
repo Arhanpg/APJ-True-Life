@@ -1,75 +1,84 @@
 "use client";
 
-import { useState } from "react";
 import { appointmentEvents } from "@/lib/mock-data";
+import { useState } from "react";
 import { StatusBadge } from "@/components/shared/status-badge";
-
-const hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+import { todaySchedule } from "@/lib/mock-data";
 
 export function AppointmentCalendar() {
   const [view, setView] = useState<"calendar" | "list">("list");
 
   return (
-    <div className="rounded-2xl border border-outlinevariant bg-white p-6 shadow-card">
-      <div className="mb-5 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-primary-dark">Appointment Calendar</h3>
-        <div className="flex gap-2">
-          {(["list", "calendar"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`rounded-lg px-4 py-2 text-sm capitalize ${
-                view === v ? "bg-primary text-white" : "border border-outlinevariant text-muted"
-              }`}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
+    <div className="space-y-6">
+      {/* View Toggle */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setView("list")}
+          className={`rounded-xl px-4 py-2 text-sm font-medium ${
+            view === "list" ? "bg-[#1A5C38] text-white" : "bg-[#E1F2E8] text-[#404941]"
+          }`}
+        >
+          List View
+        </button>
+        <button
+          onClick={() => setView("calendar")}
+          className={`rounded-xl px-4 py-2 text-sm font-medium ${
+            view === "calendar" ? "bg-[#1A5C38] text-white" : "bg-[#E1F2E8] text-[#404941]"
+          }`}
+        >
+          Calendar View
+        </button>
       </div>
 
       {view === "list" ? (
-        <div className="space-y-3">
-          {appointmentEvents.map((event, i) => (
-            <div key={i} className="flex items-center justify-between rounded-xl border border-outlinevariant p-4">
-              <div>
-                <p className="font-medium text-onsurface">{event.title}</p>
-                <p className="font-mono text-xs text-muted">
-                  {new Date(event.start).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
-                </p>
-              </div>
-              <StatusBadge label="Confirmed" />
-            </div>
-          ))}
+        <div className="rounded-2xl border border-[#C0C9BF] bg-white p-6 shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-[#E1F2E8] text-[#404941]">
+                <th className="pb-3 font-medium">Time</th>
+                <th className="pb-3 font-medium">Patient</th>
+                <th className="pb-3 font-medium">Purpose</th>
+                <th className="pb-3 font-medium">Status</th>
+                <th className="pb-3 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E1F2E8]">
+              {todaySchedule.map((item) => (
+                <tr key={`${item.time}-${item.patient}`}>
+                  <td className="py-4 font-mono text-xs text-[#404941]">{item.time}</td>
+                  <td className="py-4 font-medium text-[#111E18]">{item.patient}</td>
+                  <td className="py-4 text-[#404941]">{item.purpose}</td>
+                  <td className="py-4"><StatusBadge label={item.status} /></td>
+                  <td className="py-4">
+                    <div className="flex gap-2">
+                      <button className="rounded-lg bg-[#1A5C38] px-3 py-1.5 text-xs text-white">Confirm</button>
+                      <button className="rounded-lg border border-[#C0C9BF] px-3 py-1.5 text-xs">Cancel</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <div className="min-w-[600px]">
-            <div className="mb-3 grid grid-cols-[64px_repeat(7,1fr)] gap-1 text-center text-xs font-medium text-muted">
-              <div />
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                <div key={d} className="rounded-lg bg-surface-tint py-2">{d}</div>
-              ))}
-            </div>
-            {hours.map((hour) => (
-              <div key={hour} className="grid grid-cols-[64px_repeat(7,1fr)] gap-1">
-                <div className="py-2 text-right pr-2 font-mono text-xs text-muted">{hour}</div>
-                {Array.from({ length: 7 }).map((_, d) => {
-                  const match = appointmentEvents.find(
-                    (e) => new Date(e.start).getDay() === (d + 1) % 7 &&
-                      new Date(e.start).getHours() === parseInt(hour)
-                  );
-                  return (
-                    <div
-                      key={d}
-                      className={`min-h-[40px] rounded-lg border p-1 text-xs ${
-                        match ? "border-primary/40 bg-primary/10 text-primary" : "border-outlinevariant/40"
-                      }`}
-                    >
-                      {match && <span className="line-clamp-2">{match.title}</span>}
-                    </div>
-                  );
-                })}
+        <div className="rounded-2xl border border-[#C0C9BF] bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-semibold text-[#004324]">Week of {new Date().toDateString()}</h3>
+          </div>
+          <div className="space-y-3">
+            {appointmentEvents.map((event) => (
+              <div
+                key={event.id}
+                className="flex items-center gap-4 rounded-xl p-4"
+                style={{ backgroundColor: event.backgroundColor + "20", borderLeft: `4px solid ${event.backgroundColor}` }}
+              >
+                <div>
+                  <p className="font-medium text-[#111E18]">{event.title}</p>
+                  <p className="mt-0.5 font-mono text-xs text-[#404941]">
+                    {new Date(event.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} –{" "}
+                    {new Date(event.end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

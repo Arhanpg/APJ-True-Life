@@ -35,12 +35,7 @@ export interface TreatmentPhase {
   status: TreatmentPhaseStatus;
   goal: string;
   procedures: string[];
-  medicines: {
-    name: string;
-    dosage: string;
-    frequency: string;
-    timing: string;
-  }[];
+  medicines: { name: string; dosage: string; frequency: string; timing: string }[];
   dietConsume: string[];
   dietAvoid: string[];
 }
@@ -54,9 +49,10 @@ export interface Conversation {
   unread: number;
 }
 
-export interface CalendarEvent {
-  title: string;
-  start: string;
-  end: string;
-  color?: string;
+export interface ClinicService {
+  id: string;
+  name: string;
+  duration: string;
+  price: string;
+  active: boolean;
 }

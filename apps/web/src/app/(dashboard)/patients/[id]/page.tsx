@@ -2,100 +2,81 @@ import { patients } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/shared/status-badge";
 import Link from "next/link";
 
-export default function PatientProfilePage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function PatientProfilePage({ params }: { params: { id: string } }) {
   const patient = patients.find((p) => p.id === params.id) ?? patients[0];
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-      {/* Left: Patient Details */}
-      <div className="space-y-5">
-        <div className="rounded-2xl border border-outlinevariant bg-white p-6 shadow-card">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="font-mono text-xs text-muted">{patient.id}</p>
-              <h1 className="mt-1 text-2xl font-semibold text-primary-dark">{patient.name}</h1>
-              <p className="mt-1 text-sm text-muted">
-                {patient.email} &middot; {patient.phone}
-              </p>
+    <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      {/* Main info */}
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-[#C0C9BF] bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center gap-3">
+            <Link href="/patients" className="text-sm text-[#1A5C38] hover:underline">← Patients</Link>
+          </div>
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1A5C38] text-xl font-bold text-white">
+                {patient.name[0]}
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-[#004324]">{patient.name}</h1>
+                <p className="mt-1 text-sm text-[#404941]">{patient.id} · {patient.email} · {patient.phone}</p>
+              </div>
             </div>
             <StatusBadge label={patient.status} />
           </div>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
             {[
+              { label: "Age", value: `${patient.age} years` },
+              { label: "Gender", value: patient.gender },
               { label: "Prakriti", value: patient.prakriti },
-              { label: "Age / Gender", value: `${patient.age} years / ${patient.gender}` },
-              { label: "Active Treatment", value: patient.activeTreatment },
-              { label: "Last Visit", value: patient.lastVisit },
               { label: "Blood Group", value: "B+" },
-              { label: "Emergency Contact", value: "+91 9012345678" },
-            ].map((row) => (
-              <div key={row.label} className="rounded-xl bg-surface-low p-4">
-                <p className="text-xs text-muted">{row.label}</p>
-                <p className="mt-1 text-sm font-medium text-onsurface">{row.value}</p>
+            ].map((item) => (
+              <div key={item.label} className="rounded-xl bg-[#F5FBF7] p-4">
+                <p className="text-xs text-[#707971]">{item.label}</p>
+                <p className="mt-1 font-medium text-[#111E18]">{item.value}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-outlinevariant bg-white p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-primary-dark">Medical History</h2>
-          <ul className="mt-4 space-y-3 text-sm text-muted">
-            <li className="flex gap-2"><span className="text-primary">•</span> Chronic sinus inflammation — March 2026</li>
-            <li className="flex gap-2"><span className="text-primary">•</span> No known drug allergies</li>
-            <li className="flex gap-2"><span className="text-primary">•</span> Sleep quality improved post Phase 1</li>
+        <div className="rounded-2xl border border-[#C0C9BF] bg-white p-6 shadow-sm">
+          <h2 className="font-semibold text-[#004324]">Medical History</h2>
+          <ul className="mt-4 space-y-3 text-sm text-[#404941]">
+            <li className="flex gap-2"><span className="text-[#1A5C38]">•</span> Chronic sinus inflammation (March 2026)</li>
+            <li className="flex gap-2"><span className="text-[#1A5C38]">•</span> No known drug allergies</li>
+            <li className="flex gap-2"><span className="text-[#1A5C38]">•</span> Sleep quality improved after Phase 1 treatment</li>
+            <li className="flex gap-2"><span className="text-[#1A5C38]">•</span> Mild Vata imbalance noted in initial dosha assessment</li>
           </ul>
         </div>
       </div>
 
-      {/* Right: Quick Actions + Document Vault */}
-      <div className="space-y-5">
-        <div className="rounded-2xl border border-outlinevariant bg-white p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-primary-dark">Quick Actions</h2>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link
-              href="/treatments/new"
-              className="rounded-xl bg-primary px-4 py-3 text-sm font-medium text-white transition hover:bg-primary-dark"
-            >
-              New Treatment
+      {/* Right sidebar */}
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-[#C0C9BF] bg-white p-6 shadow-sm">
+          <h2 className="font-semibold text-[#004324]">Active Treatment</h2>
+          <p className="mt-2 text-sm text-[#404941]">{patient.activeTreatment}</p>
+          <p className="mt-1 text-sm text-[#707971]">Last visit: {patient.lastVisit}</p>
+        </div>
+
+        <div className="rounded-2xl border border-[#C0C9BF] bg-white p-6 shadow-sm">
+          <h2 className="font-semibold text-[#004324]">Quick Actions</h2>
+          <div className="mt-4 flex flex-col gap-3">
+            <Link href="/treatments/new" className="rounded-xl bg-[#1A5C38] px-4 py-3 text-center text-sm font-medium text-white">
+              + New Treatment
             </Link>
-            <Link
-              href="/appointments"
-              className="rounded-xl border border-outlinevariant px-4 py-3 text-sm transition hover:bg-surface-low"
-            >
+            <Link href="/appointments" className="rounded-xl border border-[#C0C9BF] px-4 py-3 text-center text-sm">
               Book Appointment
             </Link>
-            <Link
-              href="/chat"
-              className="rounded-xl border border-outlinevariant px-4 py-3 text-sm transition hover:bg-surface-low"
-            >
+            <Link href="/chat" className="rounded-xl border border-[#C0C9BF] px-4 py-3 text-center text-sm">
               Send Message
             </Link>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-outlinevariant bg-white p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-primary-dark">Document Vault</h2>
-          <p className="mt-2 text-sm text-muted">All prescriptions, diet charts, and assessment images.</p>
-          <div className="mt-4 space-y-3">
-            {[
-              { name: "Nasya_Phase2_Prescription.pdf", date: "2026-06-05" },
-              { name: "Diet_Chart_Phase1.pdf", date: "2026-05-20" },
-              { name: "Initial_Assessment.jpg", date: "2026-05-15" },
-            ].map((doc) => (
-              <div key={doc.name} className="flex items-center justify-between rounded-xl border border-outlinevariant p-3 text-sm">
-                <div>
-                  <p className="font-medium text-onsurface">{doc.name}</p>
-                  <p className="text-xs text-muted">{doc.date}</p>
-                </div>
-                <button className="text-primary hover:underline">View</button>
-              </div>
-            ))}
-          </div>
+        <div className="rounded-2xl border border-[#C0C9BF] bg-white p-6 shadow-sm">
+          <h2 className="font-semibold text-[#004324]">Document Vault</h2>
+          <p className="mt-2 text-sm text-[#707971]">No documents uploaded yet for this patient.</p>
         </div>
       </div>
     </div>

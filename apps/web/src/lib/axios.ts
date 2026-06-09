@@ -7,8 +7,13 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("apj_token");
+    const token = sessionStorage.getItem("apj_jwt");
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => Promise.reject(err)
+);
