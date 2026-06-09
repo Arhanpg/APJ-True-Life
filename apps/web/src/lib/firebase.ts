@@ -2,7 +2,7 @@ import { getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? "demo-api-key",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? "demo",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? "demo.firebaseapp.com",
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "demo-project",
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ?? "demo-app-id",

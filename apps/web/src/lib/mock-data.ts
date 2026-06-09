@@ -1,13 +1,6 @@
-import type {
-  CompletedTreatment,
-  Conversation,
-  KpiData,
-  Patient,
-  ScheduleItem,
-  TreatmentPhase,
-} from "@/types";
+import type { CalendarEvent, Conversation, KpiCard, Patient, ScheduleItem, TreatmentPhase } from "@/types";
 
-export const kpis: KpiData[] = [
+export const kpis: KpiCard[] = [
   { title: "Active Patients", value: "128", trend: "+12 this month", tone: "success" },
   { title: "Today's Appointments", value: "14", trend: "4 pending confirmation", tone: "primary" },
   { title: "Unread Messages", value: "09", trend: "3 critical follow-ups", tone: "gold" },
@@ -18,8 +11,7 @@ export const todaySchedule: ScheduleItem[] = [
   { time: "09:00 AM", patient: "Rahul Nair", purpose: "Panchakarma Review", status: "Confirmed" },
   { time: "10:30 AM", patient: "Sneha Kulkarni", purpose: "Follow-up Consultation", status: "Confirmed" },
   { time: "12:00 PM", patient: "Ajay Sharma", purpose: "Nasya Assessment", status: "Pending" },
-  { time: "02:00 PM", patient: "Lakshmi Iyer", purpose: "Diet Therapy Review", status: "Confirmed" },
-  { time: "04:30 PM", patient: "Meera Rao", purpose: "Stress & Sleep Check-in", status: "Pending" },
+  { time: "04:30 PM", patient: "Meera Rao", purpose: "Diet Therapy Check-in", status: "Confirmed" },
 ];
 
 export const patients: Patient[] = [
@@ -71,18 +63,6 @@ export const patients: Patient[] = [
     lastVisit: "2026-06-05",
     prakriti: "Kapha-Pitta",
   },
-  {
-    id: "ATL-1005",
-    name: "Lakshmi Iyer",
-    email: "lakshmi@example.com",
-    phone: "+91 9900887766",
-    age: 52,
-    gender: "Female",
-    status: "Active",
-    activeTreatment: "Arthritis Management",
-    lastVisit: "2026-06-04",
-    prakriti: "Kapha",
-  },
 ];
 
 export const phases: TreatmentPhase[] = [
@@ -90,50 +70,42 @@ export const phases: TreatmentPhase[] = [
     id: "phase-1",
     title: "Purvakarma Preparation",
     status: "Completed",
-    goal: "Prepare nasal passages and digestive fire for therapy.",
-    procedures: [
-      "Warm oil facial massage (Abhyanga)",
-      "Steam inhalation for 15 minutes",
-      "Light digestive decoction (Trikatu Kashayam)",
-    ],
+    goal: "Prepare nasal passages and digestive fire for main therapy.",
+    procedures: ["Warm oil facial massage", "Steam inhalation (10 min)", "Light digestive decoction twice daily"],
     medicines: [
       { name: "Trikatu Churna", dosage: "1 tsp", frequency: "Twice daily", timing: "Before food" },
     ],
-    dietConsume: ["Warm water", "Jeera rice", "Moong soup", "Ginger tea"],
-    dietAvoid: ["Curd", "Cold drinks", "Deep fried items", "Raw salads"],
+    dietConsume: ["Warm water", "Jeera rice", "Moong dal soup"],
+    dietAvoid: ["Curd", "Cold drinks", "Deep fried items"],
   },
   {
     id: "phase-2",
     title: "Nasya Therapy",
     status: "Current",
-    goal: "Reduce inflammation and improve nasal passage function.",
+    goal: "Reduce polyp inflammation and restore nasal passage function.",
     procedures: [
-      "Daily Nasya with medicated Anu Tailam oil",
-      "Herbal steam fomentation for 20 minutes",
+      "Anu Tailam Nasya — 2 drops each nostril",
+      "Herbal steam fomentation 15 min",
       "Doctor review every 3 days",
     ],
     medicines: [
       { name: "Anu Tailam", dosage: "2 drops", frequency: "Twice daily", timing: "Morning & evening" },
       { name: "Kanchanara Guggulu", dosage: "2 tablets", frequency: "Twice daily", timing: "After food" },
     ],
-    dietConsume: ["Warm herbal tea", "Steamed vegetables", "Light khichdi", "Rock salt water"],
-    dietAvoid: ["Ice cream", "Bakery foods", "Excess dairy", "Processed foods"],
+    dietConsume: ["Warm herbal tea", "Steamed vegetables", "Light khichdi"],
+    dietAvoid: ["Ice cream", "Bakery foods", "Excess dairy"],
   },
   {
     id: "phase-3",
-    title: "Rejuvenation & Consolidation",
+    title: "Rejuvenation & Review",
     status: "Upcoming",
-    goal: "Consolidate treatment benefits and prevent relapse.",
-    procedures: [
-      "Rasayana herbal support",
-      "Sleep routine coaching session",
-      "Final clinical assessment and imaging review",
-    ],
+    goal: "Consolidate benefits and prevent relapse.",
+    procedures: ["Rasayana support regimen", "Sleep routine coaching", "Final clinical assessment"],
     medicines: [
       { name: "Chyawanprash", dosage: "1 tsp", frequency: "Daily", timing: "Morning with warm milk" },
     ],
-    dietConsume: ["Seasonal fruits", "Warm milk with turmeric", "Pomegranate juice"],
-    dietAvoid: ["Late night meals", "Packaged snacks", "Aerated drinks"],
+    dietConsume: ["Seasonal fruits", "Warm turmeric milk"],
+    dietAvoid: ["Late night meals", "Packaged snacks", "Cold water"],
   },
 ];
 
@@ -142,7 +114,7 @@ export const conversations: Conversation[] = [
     id: "1",
     patientName: "Rahul Nair",
     treatmentName: "Nasal Polyp - Nasya Course",
-    preview: "Doctor, the breathing feels much better today.",
+    preview: "Doctor, breathing feels much better today!",
     timestamp: "2 min ago",
     unread: 2,
   },
@@ -150,7 +122,7 @@ export const conversations: Conversation[] = [
     id: "2",
     patientName: "Sneha Kulkarni",
     treatmentName: "PCOS Balance Therapy",
-    preview: "Uploaded the latest diet chart for your review.",
+    preview: "Uploaded the diet chart for review.",
     timestamp: "25 min ago",
     unread: 0,
   },
@@ -158,33 +130,16 @@ export const conversations: Conversation[] = [
     id: "3",
     patientName: "Meera Rao",
     treatmentName: "Stress & Sleep Restoration",
-    preview: "Can we reschedule tomorrow's session to 4 PM?",
+    preview: "Can we reschedule tomorrow's session?",
     timestamp: "1 hr ago",
     unread: 1,
   },
 ];
 
-export const completedTreatments: CompletedTreatment[] = [
-  {
-    id: "ATL-T-0021",
-    patientName: "Ajay Sharma",
-    treatmentName: "Migraine Relief Protocol",
-    completedDate: "2026-05-31",
-    totalPhases: 4,
-  },
-  {
-    id: "ATL-T-0018",
-    patientName: "Ravi Menon",
-    treatmentName: "Digestive Wellness Programme",
-    completedDate: "2026-05-10",
-    totalPhases: 3,
-  },
-];
-
-export const appointmentEvents = [
-  { title: "Rahul Nair - Review", start: "2026-06-09T09:00:00", end: "2026-06-09T10:00:00", backgroundColor: "#1A5C38", borderColor: "#004324" },
-  { title: "Sneha Kulkarni - Follow-up", start: "2026-06-09T10:30:00", end: "2026-06-09T11:30:00", backgroundColor: "#2E7D52", borderColor: "#1A5C38" },
-  { title: "Ajay Sharma - Assessment", start: "2026-06-10T11:00:00", end: "2026-06-10T12:00:00", backgroundColor: "#C9A84C", borderColor: "#A8882A" },
-  { title: "Lakshmi Iyer - Diet Review", start: "2026-06-10T14:00:00", end: "2026-06-10T15:00:00", backgroundColor: "#1A5C38", borderColor: "#004324" },
-  { title: "Meera Rao - Consultation", start: "2026-06-11T09:30:00", end: "2026-06-11T10:30:00", backgroundColor: "#2E7D52", borderColor: "#1A5C38" },
+export const appointmentEvents: CalendarEvent[] = [
+  { title: "Rahul Nair — Nasya Review", start: "2026-06-09T09:00:00", end: "2026-06-09T10:00:00", color: "#1A5C38" },
+  { title: "Sneha Kulkarni — Follow-up", start: "2026-06-09T10:30:00", end: "2026-06-09T11:30:00", color: "#2E7D52" },
+  { title: "Ajay Sharma — Nasya Assessment", start: "2026-06-10T09:00:00", end: "2026-06-10T10:00:00", color: "#1A5C38" },
+  { title: "Meera Rao — Diet Check-in", start: "2026-06-10T14:00:00", end: "2026-06-10T15:00:00", color: "#C9A84C" },
+  { title: "Rahul Nair — Phase Review", start: "2026-06-11T11:00:00", end: "2026-06-11T12:00:00", color: "#1A5C38" },
 ];

@@ -1,8 +1,8 @@
 export type PatientStatus = "Active" | "In Treatment" | "Completed";
-export type AppointmentStatus = "Confirmed" | "Pending" | "Cancelled" | "In Progress";
-export type PhaseStatus = "Completed" | "Current" | "Upcoming";
+export type AppointmentStatus = "Confirmed" | "Pending" | "Cancelled";
+export type TreatmentPhaseStatus = "Completed" | "Current" | "Upcoming";
 
-export interface KpiData {
+export interface KpiCard {
   title: string;
   value: string;
   trend: string;
@@ -29,20 +29,18 @@ export interface Patient {
   prakriti: string;
 }
 
-export interface Medicine {
-  name: string;
-  dosage: string;
-  frequency: string;
-  timing: string;
-}
-
 export interface TreatmentPhase {
   id: string;
   title: string;
-  status: PhaseStatus;
+  status: TreatmentPhaseStatus;
   goal: string;
   procedures: string[];
-  medicines: Medicine[];
+  medicines: {
+    name: string;
+    dosage: string;
+    frequency: string;
+    timing: string;
+  }[];
   dietConsume: string[];
   dietAvoid: string[];
 }
@@ -56,10 +54,9 @@ export interface Conversation {
   unread: number;
 }
 
-export interface CompletedTreatment {
-  id: string;
-  patientName: string;
-  treatmentName: string;
-  completedDate: string;
-  totalPhases: number;
+export interface CalendarEvent {
+  title: string;
+  start: string;
+  end: string;
+  color?: string;
 }

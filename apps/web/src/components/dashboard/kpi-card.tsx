@@ -1,30 +1,26 @@
-import type { KpiData } from "@/types";
+import type { KpiCard } from "@/types";
 import { cn } from "@/lib/utils";
 
-const toneClasses: Record<KpiData["tone"], string> = {
-  success: "bg-emerald-50 text-success",
-  primary: "bg-teal-50 text-primary",
-  gold: "bg-amber-50 text-warning",
-  warning: "bg-orange-50 text-warning",
+const toneStyles = {
+  success: "bg-emerald-50 text-emerald-700",
+  primary: "bg-green-50 text-primary",
+  gold: "bg-amber-50 text-amber-700",
+  warning: "bg-orange-50 text-orange-700",
 };
 
-export function KpiCard({ item }: { item: KpiData }) {
+export function KpiCard({ item }: { item: KpiCard }) {
   return (
     <div className="rounded-2xl border border-outlinevariant bg-white p-5 shadow-soft">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm text-muted">{item.title}</p>
-          <h2 className="mt-3 text-4xl font-bold text-primary-dark">{item.value}</h2>
-        </div>
-        <span
-          className={cn(
-            "mt-1 rounded-full px-3 py-1 text-xs font-medium",
-            toneClasses[item.tone]
-          )}
-        >
-          {item.trend}
-        </span>
-      </div>
+      <p className="text-sm text-muted">{item.title}</p>
+      <h3 className="mt-3 text-4xl font-bold text-primary-dark">{item.value}</h3>
+      <span
+        className={cn(
+          "mt-3 inline-flex rounded-full px-3 py-1 text-xs font-medium",
+          toneStyles[item.tone]
+        )}
+      >
+        {item.trend}
+      </span>
     </div>
   );
 }
