@@ -1,62 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  --primary: #1A5C38;
+  --primary-dark: #004324;
+  --secondary: #2E7D52;
+  --gold: #C9A84C;
+  --bg: #EDFDF3;
+  --surface: #FFFFFF;
+  --surface-tint: #E1F2E8;
+  --text: #111E18;
+  --text-muted: #404941;
+  --outline: #707971;
+  --error: #BA1A1A;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  min-height: 100dvh;
-  background-color: #edfdf3;
-  color: #111e18;
-  line-height: 1.6;
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
 }
 
-::selection {
-  background-color: rgba(26, 92, 56, 0.15);
-  color: #111e18;
-}
+.font-display { font-family: 'Playfair Display', serif; }
 
-:focus-visible {
-  outline: 2px solid #1a5c38;
-  outline-offset: 2px;
-  border-radius: 6px;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-tint); }
+::-webkit-scrollbar-thumb { background: #C0C9BF; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--outline); }
 
-/* Font utilities */
-.font-display { font-family: var(--font-playfair), serif; }
-.font-sans { font-family: var(--font-dm-sans), sans-serif; }
-.font-mono { font-family: var(--font-jetbrains), monospace; }
-
-/* Skeleton shimmer for loading states */
+/* Skeleton shimmer */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    #e1f2e8 25%,
-    #edfdf3 50%,
-    #e1f2e8 75%
-  );
+  background: linear-gradient(90deg, #E1F2E8 25%, #F0FAF4 50%, #E1F2E8 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 8px;
+  border-radius: 6px;
 }
+
+/* Status chips */
+.chip-active   { background: #EAF4EC; color: #1A5C38; }
+.chip-pending  { background: #FFF3E0; color: #E65100; }
+.chip-completed{ background: #F5F5F5; color: #424242; }
+.chip-cancelled{ background: #FFEBEE; color: #BA1A1A; }
+.chip-progress { background: #E3F2FD; color: #1565C0; }

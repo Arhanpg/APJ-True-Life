@@ -1,47 +1,65 @@
-import { patients } from "@/lib/mock-data";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { ProgressBar } from "@/components/shared/progress-bar";
-import Link from "next/link";
+'use client';
+import { useState } from 'react';
+import Link from 'next/link';
+
+const MOCK_TREATMENTS = [
+  { id: '1', patientName: 'Ramesh Kumar', planName: 'Nasal Polyp — Nasya Course', phase: 2, totalPhases: 4, status: 'ACTIVE', startDate: '2026-05-01', progress: 50 },
+  { id: '2', patientName: 'Priya Sharma', planName: 'Panchakarma Detox Program', phase: 1, totalPhases: 3, status: 'ACTIVE', startDate: '2026-06-01', progress: 33 },
+  { id: '3', patientName: 'Anjali Mehta', planName: 'Stress Relief — Shirodhara', phase: 3, totalPhases: 3, status: 'COMPLETED', startDate: '2026-04-01', progress: 100 },
+];
 
 export default function TreatmentsPage() {
-  const activePlans = patients.filter((p) => p.status === "In Treatment");
+  const [filter, setFilter] = useState('ALL');
+
+  const filtered = MOCK_TREATMENTS.filter(t => filter === 'ALL' || t.status === filter);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-6 max-w-[1400px]">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-[#004324]">Treatment Plans</h1>
-          <p className="mt-1 text-sm text-[#404941]">All active and completed treatment plans across patients.</p>
+          <h1 className="font-display text-2xl font-bold" style={{ color: 'var(--primary-dark)' }}>Treatment Plans</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Manage all active and completed treatment plans</p>
         </div>
-        <Link href="/treatments/new" className="rounded-xl bg-[#1A5C38] px-5 py-2.5 text-sm font-medium text-white">
-          + Create Treatment Plan
-        </Link>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
-        {activePlans.map((patient) => (
-          <div key={patient.id} className="rounded-2xl border border-[#C0C9BF] bg-white p-5 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-semibold text-[#004324]">{patient.activeTreatment}</p>
-                <p className="mt-1 text-sm text-[#404941]">{patient.name} · {patient.prakriti}</p>
+      {/* Filter */}
+      <div className="flex gap-2">
+        {['ALL','ACTIVE','COMPLETED','CANCELLED'].map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className="px-3 py-1.5 rounded-full text-xs font-medium border transition-all"
+            style={filter === f ? { background: 'var(--primary)', color: 'white', borderColor: 'var(--primary)' } : { borderColor: '#C0C9BF', color: 'var(--text-muted)', background: 'white' }}>
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid gap-4">
+        {filtered.map(t => (
+          <div key={t.id} className="rounded-xl border p-5 flex items-center gap-6" style={{ background: 'var(--surface)', borderColor: '#D4E8D8' }}>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="font-semibold" style={{ color: 'var(--primary-dark)' }}>{t.patientName}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium chip-${t.status.toLowerCase()}`}>{t.status}</span>
               </div>
-              <StatusBadge label={patient.status} />
+              <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>{t.planName}</p>
+              <div className="flex items-center gap-4">
+                <div className="flex-1 max-w-xs">
+                  <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
+                    <span>Phase {t.phase} of {t.totalPhases}</span>
+                    <span>{t.progress}%</span>
+                  </div>
+                  <div className="h-2 rounded-full" style={{ background: 'var(--surface-tint)' }}>
+                    <div className="h-2 rounded-full transition-all" style={{ width: `${t.progress}%`, background: 'var(--secondary)' }} />
+                  </div>
+                </div>
+                <span className="text-xs" style={{ color: 'var(--outline)' }}>Started {t.startDate}</span>
+              </div>
             </div>
-            <div className="mt-4">
-              <ProgressBar value={62} />
-            </div>
-            <div className="mt-4 flex gap-3">
-              <Link
-                href={`/treatments/${patient.id}`}
-                className="rounded-xl bg-[#1A5C38] px-4 py-2 text-sm font-medium text-white"
-              >
-                Manage
-              </Link>
-              <Link href="/chat" className="rounded-xl border border-[#C0C9BF] px-4 py-2 text-sm">
-                Chat
-              </Link>
-            </div>
+            <Link href={`/treatments/${t.id}`}
+              className="px-4 py-2 rounded-lg text-sm font-medium border"
+              style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>
+              View Details
+            </Link>
           </div>
         ))}
       </div>
