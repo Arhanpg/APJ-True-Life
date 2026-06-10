@@ -1,159 +1,91 @@
 'use client';
 import { useState } from 'react';
 
-const SERVICE_CATEGORIES = ['General Consultation', 'Panchakarma Therapy', 'Nasya', 'Abhyanga', 'Yoga Therapy', 'Dietetics Consultation'];
-
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('Clinic Info');
-  const TABS = ['Clinic Info', 'Doctor Profile', 'Services', 'Notifications'];
-  const [clinic, setClinic] = useState({ name: 'APJ TRUE LIFE', tagline: 'Ayurvedic Excellence', address: '', phone: '', email: '', website: '' });
-  const [doctor, setDoctor] = useState({ fullName: '', title: 'Chief Vaidya', bio: '' });
+  const [clinicForm, setClinicForm] = useState({ name: 'APJ TRUE LIFE', address: '', phone: '', email: '', website: '' });
+  const [doctorForm, setDoctorForm] = useState({ fullName: '', title: 'Chief Vaidya', bio: '' });
+  const setClinic = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setClinicForm(p => ({ ...p, [k]: e.target.value }));
+  const setDoctor = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setDoctorForm(p => ({ ...p, [k]: e.target.value }));
+  const inputStyle = { width: '100%', padding: '9px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 14, outline: 'none', color: '#111E18', background: '#fff' };
+  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 4 };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div>
-        <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700, color: '#004324' }}>Clinic Settings</h1>
-        <p style={{ fontSize: 13, color: '#707971', marginTop: 2 }}>Manage clinic information and preferences</p>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 900 }}>
+      <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700, color: '#004324' }}>Clinic Settings</h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20 }}>
-        <div>
-          {/* Tab bar */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Clinic Info */}
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 24 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111E18', marginBottom: 16, paddingBottom: 10, borderBottom: '1px solid #E1F2E8' }}>Clinic Information</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Clinic Name</label><input value={clinicForm.name} onChange={setClinic('name')} style={inputStyle} /></div>
+              <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Address</label><textarea value={clinicForm.address} onChange={setClinic('address')} rows={2} style={{ ...inputStyle, resize: 'vertical' }} /></div>
+              <div><label style={labelStyle}>Phone</label><input value={clinicForm.phone} onChange={setClinic('phone')} placeholder="+91 XXXXXXXXXX" style={inputStyle} /></div>
+              <div><label style={labelStyle}>Email</label><input type="email" value={clinicForm.email} onChange={setClinic('email')} style={inputStyle} /></div>
+              <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Website</label><input value={clinicForm.website} onChange={setClinic('website')} placeholder="https://" style={inputStyle} /></div>
+            </div>
+            <button style={{ marginTop: 16, background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Save Clinic Info</button>
+          </div>
+
+          {/* Doctor Profile */}
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 24 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111E18', marginBottom: 16, paddingBottom: 10, borderBottom: '1px solid #E1F2E8' }}>Doctor Profile</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+                <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#1A5C38', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: '#fff', fontSize: 24, fontWeight: 700 }}>Dr</span>
+                </div>
+                <button style={{ border: '1.5px solid #1A5C38', color: '#1A5C38', background: 'transparent', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Upload Photo</button>
+              </div>
+              <div><label style={labelStyle}>Full Name</label><input value={doctorForm.fullName} onChange={setDoctor('fullName')} placeholder="Dr. Full Name" style={inputStyle} /></div>
+              <div><label style={labelStyle}>Professional Title</label><input value={doctorForm.title} onChange={setDoctor('title')} style={inputStyle} /></div>
+              <div><label style={labelStyle}>Bio (visible to patients)</label><textarea value={doctorForm.bio} onChange={setDoctor('bio')} rows={3} placeholder="Brief professional bio..." style={{ ...inputStyle, resize: 'vertical' }} /></div>
+            </div>
+            <button style={{ marginTop: 16, background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Save Profile</button>
+          </div>
+
+          {/* Services */}
           <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', borderBottom: '1px solid #E1F2E8', background: '#EDFDF3' }}>
-              {TABS.map(t => (
-                <button key={t} onClick={() => setActiveTab(t)} style={{ flex: 1, padding: '12px 8px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', background: activeTab === t ? '#fff' : 'transparent', color: activeTab === t ? '#1A5C38' : '#707971', borderBottom: activeTab === t ? '2px solid #1A5C38' : '2px solid transparent' }}>{t}</button>
-              ))}
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #E1F2E8', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111E18' }}>Available Services</h2>
+              <button style={{ background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>+ Add Service</button>
             </div>
-
-            <div style={{ padding: 24 }}>
-              {activeTab === 'Clinic Info' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                    {[{ label: 'Clinic Name *', key: 'name', placeholder: 'APJ TRUE LIFE' },
-                      { label: 'Tagline', key: 'tagline', placeholder: 'Ayurvedic Excellence' },
-                      { label: 'Phone', key: 'phone', placeholder: '+91 XXXXX XXXXX' },
-                      { label: 'Email', key: 'email', placeholder: 'clinic@email.com' },
-                      { label: 'Website', key: 'website', placeholder: 'https://...' }]
-                      .map(f => (
-                        <div key={f.key}>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>{f.label}</label>
-                          <input value={clinic[f.key as keyof typeof clinic]} onChange={e => setClinic(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={{ width: '100%', border: '1.5px solid #C0C9BF', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none' }} />
-                        </div>
-                      ))}
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Address</label>
-                    <textarea rows={2} value={clinic.address} onChange={e => setClinic(p => ({ ...p, address: e.target.value }))} placeholder="Full clinic address" style={{ width: '100%', border: '1.5px solid #C0C9BF', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none', resize: 'vertical' }} />
-                  </div>
-                  <button style={{ alignSelf: 'flex-start', background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Save Changes</button>
-                </div>
-              )}
-
-              {activeTab === 'Doctor Profile' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: '#EDFDF3', borderRadius: 10 }}>
-                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#1A5C38', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#fff', fontSize: 22, fontWeight: 700 }}>D</span></div>
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#111E18' }}>Profile Photo</p>
-                      <button style={{ marginTop: 6, background: '#fff', border: '1.5px solid #1A5C38', borderRadius: 6, padding: '5px 12px', fontSize: 12, color: '#1A5C38', cursor: 'pointer' }}>Upload Photo</button>
-                    </div>
-                  </div>
-                  {[{ label: 'Full Name *', key: 'fullName', placeholder: 'Dr. APJ Sharma' },
-                    { label: 'Professional Title', key: 'title', placeholder: 'Chief Vaidya' }]
-                    .map(f => (
-                      <div key={f.key}>
-                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>{f.label}</label>
-                        <input value={doctor[f.key as keyof typeof doctor]} onChange={e => setDoctor(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={{ width: '100%', border: '1.5px solid #C0C9BF', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none' }} />
-                      </div>
-                    ))}
-                  <div>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Bio <span style={{ fontWeight: 400, color: '#707971' }}>(Visible to patients)</span></label>
-                    <textarea rows={4} value={doctor.bio} onChange={e => setDoctor(p => ({ ...p, bio: e.target.value }))} placeholder="Your professional background and specializations..." style={{ width: '100%', border: '1.5px solid #C0C9BF', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none', resize: 'vertical' }} />
-                  </div>
-                  <button style={{ alignSelf: 'flex-start', background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Save Profile</button>
-                </div>
-              )}
-
-              {activeTab === 'Services' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ fontSize: 14, color: '#404941' }}>Manage services offered at your clinic</p>
-                    <button style={{ background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>+ Add Service</button>
-                  </div>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #E1F2E8', borderRadius: 8, overflow: 'hidden' }}>
-                    <thead>
-                      <tr style={{ background: '#EDFDF3' }}>
-                        {['Service Name', 'Duration', 'Price (INR)', 'Active', 'Actions'].map(h => (
-                          <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#707971', textTransform: 'uppercase', borderBottom: '1px solid #E1F2E8' }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {SERVICE_CATEGORIES.map((svc, i) => (
-                        <tr key={svc} style={{ borderBottom: '1px solid #F0F7F2', background: i % 2 === 0 ? '#fff' : '#FAFFFE' }}>
-                          <td style={{ padding: '12px 14px', fontSize: 14, color: '#111E18', fontWeight: 500 }}>{svc}</td>
-                          <td style={{ padding: '12px 14px', fontSize: 14, color: '#404941' }}>60 min</td>
-                          <td style={{ padding: '12px 14px', fontSize: 14, color: '#404941' }}>₹ —</td>
-                          <td style={{ padding: '12px 14px' }}>
-                            <div style={{ width: 36, height: 20, borderRadius: 999, background: '#1A5C38', position: 'relative', cursor: 'pointer' }}>
-                              <div style={{ position: 'absolute', right: 2, top: 2, width: 16, height: 16, borderRadius: '50%', background: '#fff' }} />
-                            </div>
-                          </td>
-                          <td style={{ padding: '12px 14px' }}>
-                            <div style={{ display: 'flex', gap: 8 }}>
-                              <button style={{ fontSize: 12, color: '#1A5C38', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Edit</button>
-                              <button style={{ fontSize: 12, color: '#BA1A1A', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Delete</button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {activeTab === 'Notifications' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  {[{ label: 'New appointment booking', desc: 'When a patient requests an appointment' },
-                    { label: 'Appointment confirmed', desc: 'When appointment status changes' },
-                    { label: 'New chat message', desc: 'When a patient sends you a message' },
-                    { label: 'Treatment updates', desc: 'Phase completion and plan changes' }]
-                    .map(n => (
-                      <div key={n.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid #F0F7F2' }}>
-                        <div>
-                          <p style={{ fontSize: 14, fontWeight: 500, color: '#111E18' }}>{n.label}</p>
-                          <p style={{ fontSize: 12, color: '#707971', marginTop: 2 }}>{n.desc}</p>
-                        </div>
-                        <div style={{ width: 44, height: 24, borderRadius: 999, background: '#1A5C38', position: 'relative', cursor: 'pointer', flexShrink: 0 }}>
-                          <div style={{ position: 'absolute', right: 2, top: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 80px 100px', padding: '10px 20px', fontSize: 11, fontWeight: 700, color: '#707971', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid #E1F2E8', background: '#F8FDF9' }}>
+              {['Service Name', 'Duration', 'Price (INR)', 'Active', 'Actions'].map(h => <span key={h}>{h}</span>)}
             </div>
+            {[['General Consultation', '30 min', '₹500', true], ['Panchakarma Therapy', '60 min', '₹2,000', true], ['Nasya Treatment', '45 min', '₹1,500', true], ['Abhyanga Massage', '60 min', '₹1,800', false]].map(([name, dur, price, active]) => (
+              <div key={String(name)} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 80px 100px', padding: '12px 20px', borderBottom: '1px solid #F0F7F2', alignItems: 'center', fontSize: 13, color: '#111E18' }}>
+                <span style={{ fontWeight: 500 }}>{name}</span>
+                <span style={{ color: '#404941' }}>{dur}</span>
+                <span style={{ fontWeight: 600 }}>{price}</span>
+                <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: active ? '#EAF4EC' : '#F5F5F5', color: active ? '#1A5C38' : '#707971' }}>{active ? 'Active' : 'Off'}</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button style={{ border: '1px solid #C0C9BF', background: 'transparent', borderRadius: 6, padding: '4px 10px', fontSize: 11, cursor: 'pointer', color: '#404941' }}>Edit</button>
+                  <button style={{ border: '1px solid #FFCDD2', background: 'transparent', borderRadius: 6, padding: '4px 10px', fontSize: 11, cursor: 'pointer', color: '#BA1A1A' }}>Del</button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Live preview card */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Live Preview */}
+        <div style={{ position: 'sticky', top: 88, height: 'fit-content' }}>
           <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ background: '#1A5C38', padding: '20px', textAlign: 'center' }}>
-              <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#C9A84C', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: '#fff', fontSize: 20, fontWeight: 700 }}>A</span>
+            <div style={{ background: '#1A5C38', padding: '20px 16px' }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                <span style={{ color: '#fff', fontSize: 16, fontWeight: 700 }}>Dr</span>
               </div>
-              <p style={{ color: '#fff', fontFamily: 'Playfair Display, serif', fontWeight: 700, fontSize: 16 }}>{clinic.name}</p>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>{clinic.tagline}</p>
-              <span style={{ display: 'inline-block', marginTop: 8, background: '#C9A84C', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 600, color: '#fff' }}>🏆 AYUSH TV 2024</span>
+              <p style={{ color: '#fff', fontFamily: 'Playfair Display, serif', fontWeight: 700, fontSize: 16 }}>{doctorForm.fullName || 'Dr. Full Name'}</p>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>{doctorForm.title}</p>
             </div>
             <div style={{ padding: 16 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#707971', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10 }}>Patient App Preview</p>
-              {clinic.phone && <p style={{ fontSize: 13, color: '#404941', marginBottom: 6 }}>📞 {clinic.phone}</p>}
-              {clinic.email && <p style={{ fontSize: 13, color: '#404941', marginBottom: 6 }}>✉️ {clinic.email}</p>}
-              {clinic.address && <p style={{ fontSize: 13, color: '#404941' }}>📍 {clinic.address}</p>}
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#111E18', marginBottom: 10 }}>{clinicForm.name}</p>
+              <p style={{ fontSize: 12, color: '#707971' }}>{clinicForm.address || 'Clinic address'}</p>
+              <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 600, marginTop: 8 }}>🏆 AYUSH TV National Health Award 2024</p>
             </div>
           </div>
+          <p style={{ fontSize: 11, color: '#707971', textAlign: 'center', marginTop: 8 }}>Patient app preview</p>
         </div>
       </div>
     </div>
