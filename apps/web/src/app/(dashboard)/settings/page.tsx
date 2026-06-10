@@ -2,97 +2,101 @@
 import { useState } from 'react';
 
 export default function SettingsPage() {
-  const [clinicName, setClinicName] = useState('APJ TRUE LIFE Ayurvedic Medical Centre');
-  const [phone, setPhone] = useState('+91 98765 43210');
-  const [address, setAddress] = useState('123, Ayurveda Marg, Bengaluru, Karnataka 560001');
+  const [clinicForm, setClinicForm] = useState({
+    name: 'APJ TRUE LIFE', tagline: 'Ayurvedic Excellence', address: '', phone: '', email: '', website: '',
+  });
+  const [doctorForm, setDoctorForm] = useState({
+    fullName: '', professionalTitle: 'Chief Vaidya', bio: '',
+  });
   const [saved, setSaved] = useState(false);
 
-  const services = [
-    { name: 'General Consultation', duration: 45, price: 500, active: true },
-    { name: 'Panchakarma Therapy', duration: 90, price: 2000, active: true },
-    { name: 'Nasya Treatment', duration: 60, price: 1200, active: true },
-    { name: 'Shirodhara', duration: 75, price: 1800, active: true },
-    { name: 'Abhyanga Massage', duration: 60, price: 1500, active: false },
-  ];
+  function updateClinic(f: string, v: string) { setClinicForm(p => ({ ...p, [f]: v })); }
+  function updateDoctor(f: string, v: string) { setDoctorForm(p => ({ ...p, [f]: v })); }
 
-  const handleSave = () => {
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    await new Promise(r => setTimeout(r, 600));
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
-  };
+  }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-bold" style={{ color: 'var(--primary-dark)' }}>Clinic Settings</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Manage your clinic information and services</p>
+        <h1 className="text-2xl font-display font-bold text-primary-dark">Clinic Settings</h1>
+        <p className="text-gray-500 text-sm mt-1">Manage your clinic information and doctor profile</p>
       </div>
 
       {saved && (
-        <div className="p-3 rounded-lg text-sm" style={{ background: '#EAF4EC', color: 'var(--primary)' }}>✅ Settings saved successfully.</div>
+        <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg p-4 text-sm">
+          ✅ Settings saved successfully.
+        </div>
       )}
 
-      {/* Clinic Info */}
-      <div className="rounded-xl border p-6" style={{ background: 'var(--surface)', borderColor: '#D4E8D8' }}>
-        <h2 className="font-semibold mb-4" style={{ color: 'var(--primary-dark)' }}>Clinic Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Clinic Name</label>
-            <input value={clinicName} onChange={e => setClinicName(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: '#C0C9BF' }} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Phone Number</label>
-            <input value={phone} onChange={e => setPhone(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: '#C0C9BF' }} />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Address</label>
-            <textarea value={address} onChange={e => setAddress(e.target.value)} rows={2}
-              className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none resize-none" style={{ borderColor: '#C0C9BF' }} />
+      <form onSubmit={handleSave} className="space-y-6">
+        {/* Clinic Info */}
+        <div className="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold text-gray-700 pb-2 border-b border-outline-variant">Clinic Information</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Name</label>
+              <input value={clinicForm.name} onChange={e => updateClinic('name', e.target.value)}
+                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
+              <input value={clinicForm.tagline} onChange={e => updateClinic('tagline', e.target.value)}
+                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <input value={clinicForm.phone} onChange={e => updateClinic('phone', e.target.value)}
+                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Clinic phone number" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" value={clinicForm.email} onChange={e => updateClinic('email', e.target.value)}
+                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Clinic email" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <textarea value={clinicForm.address} onChange={e => updateClinic('address', e.target.value)} rows={2}
+                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                placeholder="Full clinic address" />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Services */}
-      <div className="rounded-xl border p-6" style={{ background: 'var(--surface)', borderColor: '#D4E8D8' }}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold" style={{ color: 'var(--primary-dark)' }}>Available Services</h2>
-          <button className="text-sm font-medium px-3 py-1.5 rounded-lg" style={{ background: 'var(--surface-tint)', color: 'var(--primary)' }}>+ Add Service</button>
+        {/* Doctor Profile */}
+        <div className="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold text-gray-700 pb-2 border-b border-outline-variant">Doctor Profile</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <input value={doctorForm.fullName} onChange={e => updateDoctor('fullName', e.target.value)}
+                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Dr. APJ Sharma" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Professional Title</label>
+              <input value={doctorForm.professionalTitle} onChange={e => updateDoctor('professionalTitle', e.target.value)}
+                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Bio <span className="text-xs text-gray-400">(Visible to patients)</span></label>
+              <textarea value={doctorForm.bio} onChange={e => updateDoctor('bio', e.target.value)} rows={3}
+                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                placeholder="Brief bio visible to patients in the app..." />
+            </div>
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr style={{ background: 'var(--surface-tint)' }}>
-                {['Service Name','Duration','Price (INR)','Status','Actions'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {services.map((s, i) => (
-                <tr key={i} className="border-t" style={{ borderColor: '#E8F5E9' }}>
-                  <td className="px-3 py-3 text-sm font-medium">{s.name}</td>
-                  <td className="px-3 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>{s.duration} min</td>
-                  <td className="px-3 py-3 text-sm">₹{s.price.toLocaleString('en-IN')}</td>
-                  <td className="px-3 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${s.active ? 'chip-active' : 'chip-completed'}`}>{s.active ? 'Active' : 'Inactive'}</span>
-                  </td>
-                  <td className="px-3 py-3">
-                    <div className="flex gap-2">
-                      <button className="text-xs px-2 py-1 rounded" style={{ background: 'var(--surface-tint)', color: 'var(--primary)' }}>Edit</button>
-                      <button className="text-xs px-2 py-1 rounded" style={{ background: '#FFEBEE', color: 'var(--error)' }}>Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <div className="flex justify-end">
-        <button onClick={handleSave} className="px-6 py-2.5 rounded-lg text-white text-sm font-medium" style={{ background: 'var(--primary)' }}>Save All Changes</button>
-      </div>
+        <button type="submit" className="bg-primary text-white px-6 py-2.5 rounded-lg font-medium hover:bg-primary-dark transition-colors">
+          Save All Changes
+        </button>
+      </form>
     </div>
   );
 }

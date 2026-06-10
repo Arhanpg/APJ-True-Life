@@ -1,118 +1,131 @@
-"use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { useAuthStore } from "@/store/auth-store";
-
-const FEATURES = [
-  { title: "Secure Medical Records", desc: "All patient health data is encrypted and DPDP Act 2023 compliant." },
-  { title: "Treatment Plan Management", desc: "Create multi-phase Ayurvedic treatment plans and publish to patients." },
-  { title: "Schedule & Messaging", desc: "Manage appointments, teleconsultations, and treatment-scoped chat." },
-];
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function LoginPage() {
   const router = useRouter();
-  const login = useAuthStore((s) => s.login);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [resetSent, setResetSent] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
     setLoading(true);
+    setError('');
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, password);
-      login(cred.user.displayName ?? "Dr. APJ Sharma", cred.user.email ?? email);
-      router.push("/dashboard");
-    } catch {
-      // In dev, bypass Firebase and go to dashboard directly
-      login("Dr. APJ Sharma", email);
-      router.push("/dashboard");
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message.replace('Firebase: ', '').replace(/\(auth\/.*\)/, '').trim());
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  async function handleForgotPassword() {
+    if (!email) { setError('Enter your email address first.'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setResetSent(true);
+    } catch (err: any) {
+      setError(err.message.replace('Firebase: ', '').trim());
+    }
+  }
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
-      {/* Left brand panel */}
-      <section className="hidden bg-[#1A5C38] px-12 py-16 text-white lg:flex lg:flex-col lg:justify-between">
-        <div>
-          <p className="font-display text-4xl font-bold">APJ TRUE LIFE</p>
-          <p className="mt-2 text-lg text-white/80">Ayurvedic Medical Centre</p>
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#C9A84C]/50 bg-[#C9A84C]/20 px-4 py-2">
-            <span className="text-sm font-medium text-[#C9A84C]">AYUSH TV National Health Award 2024</span>
+    <div className="min-h-screen flex">
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-primary flex-col justify-between p-12">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gold rounded-lg flex items-center justify-center">
+            <span className="text-primary font-bold text-lg">A</span>
           </div>
+          <span className="text-white font-display text-xl font-semibold">APJ TRUE LIFE</span>
         </div>
-        <div className="space-y-4">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <p className="font-semibold">{f.title}</p>
-              <p className="mt-1 text-sm text-white/70">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-        <p className="text-sm text-white/50">© 2026 APJ TRUE LIFE Ayurvedic Medical Centre</p>
-      </section>
-
-      {/* Right login panel */}
-      <section className="flex items-center justify-center bg-[#EDFDF3] p-8">
-        <div className="w-full max-w-md">
-          <div className="rounded-3xl border border-[#C0C9BF] bg-white p-8 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#1A5C38]">Doctor Login</p>
-            <h1 className="mt-3 text-2xl font-semibold text-[#004324]">Access the clinical dashboard</h1>
-            <p className="mt-2 text-sm text-[#404941]">Sign in with your registered doctor credentials.</p>
-
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <label className="block space-y-1.5 text-sm font-medium text-[#111E18]">
-                Email Address
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="doctor@apjtruelife.com"
-                  className="mt-1 block w-full rounded-xl border border-[#C0C9BF] px-4 py-2.5 font-normal text-[#111E18] outline-none focus:border-[#1A5C38] focus:ring-2 focus:ring-[#1A5C38]/20"
-                  required
-                />
-              </label>
-              <label className="block space-y-1.5 text-sm font-medium text-[#111E18]">
-                Password
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="mt-1 block w-full rounded-xl border border-[#C0C9BF] px-4 py-2.5 font-normal text-[#111E18] outline-none focus:border-[#1A5C38] focus:ring-2 focus:ring-[#1A5C38]/20"
-                  required
-                />
-              </label>
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex cursor-pointer items-center gap-2 text-[#404941]">
-                  <input type="checkbox" className="accent-[#1A5C38]" />
-                  Remember me for 30 days
-                </label>
-                <button type="button" className="text-[#1A5C38] hover:underline">Forgot password?</button>
+        <div className="space-y-8">
+          <h1 className="text-white font-display text-4xl font-bold leading-tight">
+            Ayurvedic Healthcare,<br />Digitised.
+          </h1>
+          <div className="space-y-4">
+            {[
+              { icon: '🔒', title: 'Secure Medical Records', desc: 'Patient data protected with Firebase Auth & encrypted storage' },
+              { icon: '📋', title: 'Treatment Plans', desc: 'Create multi-phase Ayurvedic treatment plans with ease' },
+              { icon: '📅', title: 'Schedule Management', desc: 'Full appointment calendar with real-time notifications' },
+            ].map(f => (
+              <div key={f.title} className="flex gap-4">
+                <span className="text-2xl">{f.icon}</span>
+                <div>
+                  <p className="text-white font-medium">{f.title}</p>
+                  <p className="text-white/70 text-sm">{f.desc}</p>
+                </div>
               </div>
-              {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p>}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-xl bg-[#1A5C38] py-3 text-sm font-medium text-white transition hover:bg-[#004324] disabled:opacity-50"
-              >
-                {loading ? "Signing in…" : "Sign in to Dashboard"}
-              </button>
-            </form>
-
-            <p className="mt-5 text-xs text-[#707971]">
-              Secured by Firebase Authentication. Session is valid for 30 days with Remember Me.
-            </p>
+            ))}
           </div>
         </div>
-      </section>
-    </main>
+        <p className="text-white/50 text-sm">AYUSH TV National Health Award 2024 Winner</p>
+      </div>
+
+      {/* Right panel */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-surface">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-display font-bold text-primary-dark">Doctor Login</h2>
+            <p className="text-gray-500 mt-2">Sign in to your clinical dashboard</p>
+          </div>
+
+          {resetSent && (
+            <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg p-4 text-sm">
+              Password reset email sent. Check your inbox.
+            </div>
+          )}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <input
+                type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                className="w-full border border-outline rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="doctor@apjtruelife.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password" required value={password} onChange={e => setPassword(e.target.value)}
+                className="w-full border border-outline rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="Enter your password"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-sm text-gray-600">
+                <input type="checkbox" className="rounded border-outline" />
+                Remember me for 30 days
+              </label>
+              <button type="button" onClick={handleForgotPassword} className="text-sm text-primary hover:underline">
+                Forgot Password?
+              </button>
+            </div>
+            <button
+              type="submit" disabled={loading}
+              className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-60"
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+          <p className="text-center text-xs text-gray-400">
+            🔒 Secure connection · APJ TRUE LIFE Clinical Portal v1.0
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
