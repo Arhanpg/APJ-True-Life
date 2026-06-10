@@ -1,44 +1,36 @@
 'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: 'bg-green-100 text-green-700',
-  DRAFT: 'bg-gray-100 text-gray-600',
-  COMPLETED: 'bg-blue-100 text-blue-700',
-  CANCELLED: 'bg-red-100 text-red-700',
-};
+const STATUSES = ['All', 'Active', 'Draft', 'Completed', 'Cancelled'];
 
 export default function TreatmentsPage() {
+  const [status, setStatus] = useState('All');
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-primary-dark">Treatment Plans</h1>
-          <p className="text-gray-500 text-sm mt-1">All patient treatment plans</p>
-        </div>
-        <Link href="/treatments/new" className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors">
-          + New Treatment Plan
-        </Link>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 700, color: '#004324' }}>Treatment Plans</h1>
+        <Link href="/treatments/new" style={{ background: '#1A5C38', color: '#fff', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>+ New Treatment Plan</Link>
       </div>
 
-      <div className="bg-white border border-outline-variant rounded-xl">
-        <div className="p-5 border-b border-outline-variant">
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {['All', 'Active', 'Draft', 'Completed', 'Cancelled'].map(t => (
-              <button key={t} className="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap bg-primary text-white first:block hidden first:inline-block">
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="p-10 flex flex-col items-center text-gray-400">
-          <span className="text-5xl mb-3">📋</span>
-          <p className="font-medium text-gray-600">No treatment plans yet</p>
-          <p className="text-sm mt-1">Create a treatment plan for a patient</p>
-          <Link href="/treatments/new" className="mt-4 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-dark transition-colors">
-            + Create Treatment Plan
-          </Link>
-        </div>
+      {/* Filter bar */}
+      <div style={{ display: 'flex', gap: 4, background: '#EDFDF3', borderRadius: 8, padding: 4, width: 'fit-content' }}>
+        {STATUSES.map(s => (
+          <button key={s} onClick={() => setStatus(s)} style={{
+            padding: '6px 16px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            background: status === s ? '#1A5C38' : 'transparent',
+            color: status === s ? '#fff' : '#404941',
+          }}>{s}</button>
+        ))}
+      </div>
+
+      {/* Empty state */}
+      <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: '80px 40px', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
+        <h3 style={{ fontSize: 18, fontWeight: 600, color: '#404941', marginBottom: 8 }}>No treatment plans yet</h3>
+        <p style={{ fontSize: 14, color: '#707971', marginBottom: 24 }}>Create a multi-phase Ayurvedic treatment plan for your patients</p>
+        <Link href="/treatments/new" style={{ background: '#1A5C38', color: '#fff', borderRadius: 8, padding: '10px 24px', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Create First Treatment Plan</Link>
       </div>
     </div>
   );

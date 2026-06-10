@@ -1,60 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --primary: #1A5C38;
-  --primary-dark: #004324;
-  --secondary: #2E7D52;
-  --gold: #C9A84C;
-  --bg: #EDFDF3;
-  --surface: #FFFFFF;
-  --surface-tint: #E1F2E8;
-  --text: #111E18;
-  --text-muted: #404941;
-  --outline: #707971;
-  --error: #BA1A1A;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  background-color: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #EDFDF3;
+  color: #111E18;
+  line-height: 1.6;
 }
 
-.font-display { font-family: 'Playfair Display', serif; }
+.font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
 
-/* Scrollbar */
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+a { color: inherit; }
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--surface-tint); }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #C0C9BF; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--outline); }
+::-webkit-scrollbar-thumb:hover { background: #707971; }
 
-/* Skeleton shimmer */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.skeleton {
-  background: linear-gradient(90deg, #E1F2E8 25%, #F0FAF4 50%, #E1F2E8 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 6px;
-}
+::selection { background: rgba(26,92,56,0.15); }
 
-/* Status chips */
-.chip-active   { background: #EAF4EC; color: #1A5C38; }
-.chip-pending  { background: #FFF3E0; color: #E65100; }
-.chip-completed{ background: #F5F5F5; color: #424242; }
-.chip-cancelled{ background: #FFEBEE; color: #BA1A1A; }
-.chip-progress { background: #E3F2FD; color: #1565C0; }
+:focus-visible {
+  outline: 2px solid #1A5C38;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

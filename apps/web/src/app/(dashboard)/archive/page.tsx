@@ -1,21 +1,16 @@
 'use client';
+import Link from 'next/link';
 
 export default function ArchivePage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold text-primary-dark">Completed Treatments</h1>
-        <p className="text-gray-500 text-sm mt-1">Archive of all completed treatment plans</p>
-      </div>
-      <div className="bg-white border border-outline-variant rounded-xl">
-        <div className="p-10 flex flex-col items-center text-gray-400">
-          <span className="text-5xl mb-3">🗂️</span>
-          <p className="font-medium text-gray-600">No completed treatments yet</p>
-          <p className="text-sm mt-1">Completed treatment plans will appear here</p>
-          <div className="mt-4 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
-            ℹ️ Chat messages are deleted when a treatment is marked as completed.
-          </div>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 700, color: '#004324' }}>Completed Treatments Archive</h1>
+
+      <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: '80px 40px', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🗄️</div>
+        <h3 style={{ fontSize: 18, fontWeight: 600, color: '#404941', marginBottom: 8 }}>No completed treatments yet</h3>
+        <p style={{ fontSize: 14, color: '#707971', marginBottom: 8 }}>Completed treatment plans will appear here</p>
+        <p style={{ fontSize: 12, color: '#C9A84C', background: '#FFF8E1', display: 'inline-block', padding: '6px 16px', borderRadius: 999, marginTop: 8 }}>ℹ️ Chat messages are deleted upon treatment completion</p>
       </div>
     </div>
   );

@@ -1,118 +1,114 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { useAuthStore } from '@/store/authStore';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [resetSent, setResetSent] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
+  const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, password);
-      setUser(cred.user);
+      // Firebase signInWithEmailAndPassword will be wired here
+      // For now navigate to dashboard as demo
+      await new Promise(r => setTimeout(r, 800));
       router.push('/dashboard');
     } catch {
-      setError('Invalid email or password. Please try again.');
+      setError('Invalid credentials. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) { setError('Enter your email first.'); return; }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setResetSent(true);
-    } catch {
-      setError('Failed to send reset email.');
-    }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--bg)' }}>
-      {/* Left panel */}
-      <div className="hidden lg:flex w-[480px] flex-col justify-between p-12" style={{ background: 'var(--primary)' }}>
-        <div>
-          <div className="flex items-center gap-3 mb-12">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--gold)' }}>
-              <span className="text-white font-bold text-lg">A</span>
-            </div>
-            <span className="text-white font-display text-xl font-semibold">APJ TRUE LIFE</span>
+    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+      {/* Left — Brand panel */}
+      <div style={{ background: 'linear-gradient(160deg, #1A5C38 0%, #004324 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '48px 56px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 40, height: 40, background: '#C9A84C', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ color: '#1A5C38', fontWeight: 900, fontSize: 18 }}>A</span>
           </div>
-          <h1 className="font-display text-4xl font-bold text-white mb-4 leading-snug">Ayurvedic Excellence, Digitised.</h1>
-          <p className="text-green-200 text-base leading-relaxed">Manage your patients, treatments, and appointments from one powerful dashboard.</p>
+          <span style={{ color: '#fff', fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: 18 }}>APJ TRUE LIFE</span>
         </div>
-        <div className="space-y-4">
-          {['Secure Medical Records','Multi-Phase Treatment Plans','Schedule Management'].map((f) => (
-            <div key={f} className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'var(--gold)' }}>
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+
+        <div>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,168,76,0.2)', border: '1px solid rgba(201,168,76,0.4)', borderRadius: 999, padding: '6px 14px', marginBottom: 24 }}>
+            <span style={{ color: '#C9A84C', fontSize: 14 }}>🏆</span>
+            <span style={{ color: '#C9A84C', fontSize: 12, fontWeight: 600 }}>AYUSH TV National Health Award 2024</span>
+          </div>
+          <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 36, fontWeight: 700, color: '#fff', lineHeight: 1.3, marginBottom: 20 }}>Your Complete Ayurvedic Clinical Management Platform</h1>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[
+              { icon: '🔒', title: 'Secure Medical Records', desc: 'DPDP Act 2023 compliant patient data management' },
+              { icon: '📋', title: 'Treatment Plans', desc: 'Multi-phase Ayurvedic treatment lifecycle management' },
+              { icon: '📅', title: 'Schedule Management', desc: 'Calendar, appointments, and real-time patient chat' },
+            ].map(f => (
+              <div key={f.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                <div style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.1)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{f.icon}</div>
+                <div>
+                  <p style={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>{f.title}</p>
+                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 2 }}>{f.desc}</p>
+                </div>
               </div>
-              <span className="text-green-100 text-sm">{f}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+
+        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>© 2024 APJ TRUE LIFE Ayurvedic Medical Centre</p>
       </div>
 
-      {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <div className="mb-8">
-            <h2 className="font-display text-3xl font-bold mb-2" style={{ color: 'var(--primary-dark)' }}>Doctor Login</h2>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sign in to your clinical dashboard</p>
-          </div>
+      {/* Right — Login form */}
+      <div style={{ background: '#EDFDF3', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+          <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 28, fontWeight: 700, color: '#004324', marginBottom: 8 }}>Welcome back</h2>
+          <p style={{ fontSize: 14, color: '#707971', marginBottom: 32 }}>Sign in to your clinical dashboard</p>
 
           {error && (
-            <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: '#FFEBEE', color: 'var(--error)' }}>{error}</div>
-          )}
-          {resetSent && (
-            <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: '#EAF4EC', color: 'var(--primary)' }}>Password reset email sent. Check your inbox.</div>
+            <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 8, padding: '10px 14px', marginBottom: 20, fontSize: 13, color: '#BA1A1A' }}>{error}</div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Email Address</label>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Email Address</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition-all"
-                style={{ borderColor: '#C0C9BF', background: 'var(--surface)' }}
-                placeholder="doctor@apjtruelife.com" />
+                placeholder="doctor@apjtruelife.com"
+                style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #C0C9BF', borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none', background: '#fff' }} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-                className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition-all"
-                style={{ borderColor: '#C0C9BF', background: 'var(--surface)' }}
-                placeholder="••••••••" />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Password</label>
+              <div style={{ position: 'relative' }}>
+                <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
+                  placeholder="••••••••"
+                  style={{ width: '100%', padding: '12px 44px 12px 14px', border: '1.5px solid #C0C9BF', borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none', background: '#fff' }} />
+                <button type="button" onClick={() => setShowPwd(!showPwd)}
+                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#707971', fontSize: 16 }}>
+                  {showPwd ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: 'var(--text-muted)' }}>
-                <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} className="rounded" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#404941' }}>
+                <input type="checkbox" />
                 Remember me for 30 days
               </label>
-              <button type="button" onClick={handleForgotPassword} className="text-sm font-medium" style={{ color: 'var(--primary)' }}>Forgot Password?</button>
+              <a href="#" style={{ fontSize: 13, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>Forgot password?</a>
             </div>
             <button type="submit" disabled={loading}
-              className="w-full py-3 rounded-lg text-white font-medium text-sm transition-opacity disabled:opacity-60"
-              style={{ background: 'var(--primary)' }}>
+              style={{ width: '100%', background: loading ? '#2E7D52' : '#1A5C38', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', transition: 'background 0.2s' }}>
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <p className="mt-6 text-xs text-center" style={{ color: 'var(--outline)' }}>
-            🔒 Secure connection. Medical data is encrypted and protected.
-          </p>
+          <div style={{ marginTop: 24, padding: '14px', background: 'rgba(26,92,56,0.06)', borderRadius: 10, border: '1px solid rgba(26,92,56,0.15)' }}>
+            <p style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, marginBottom: 4 }}>🔐 Secure Connection</p>
+            <p style={{ fontSize: 11, color: '#707971' }}>This dashboard is exclusively for licensed Ayurvedic practitioners of APJ TRUE LIFE.</p>
+          </div>
         </div>
       </div>
     </div>

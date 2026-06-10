@@ -1,102 +1,118 @@
 'use client';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const kpis = [
-  { label: 'Active Patients', value: '—', trend: '+0 this week', color: 'bg-green-50 border-green-200', icon: '👤' },
-  { label: "Today's Appointments", value: '—', trend: '0 pending', color: 'bg-blue-50 border-blue-200', icon: '📅' },
-  { label: 'Unread Messages', value: '—', trend: '0 new', color: 'bg-amber-50 border-amber-200', icon: '💬' },
-  { label: 'Completed Treatments', value: '—', trend: 'this week', color: 'bg-purple-50 border-purple-200', icon: '✅' },
+const KPI = [
+  { label: 'Active Patients', value: '—', trend: '', icon: '👤', color: '#EAF4EC', text: '#1A5C38' },
+  { label: "Today's Appointments", value: '—', trend: '', icon: '📅', color: '#E8F4FF', text: '#006494' },
+  { label: 'Unread Messages', value: '—', trend: '', icon: '💬', color: '#FFF8E1', text: '#C9A84C' },
+  { label: 'Completed This Week', value: '—', trend: '', icon: '✅', color: '#F3F0EC', text: '#404941' },
+];
+
+const TODAY_SCHEDULE = [
+  { time: '09:00 AM', patient: 'Patient A', purpose: 'General Consultation', status: 'Confirmed' },
+  { time: '11:00 AM', patient: 'Patient B', purpose: 'Panchakarma Follow-up', status: 'Confirmed' },
+  { time: '02:00 PM', patient: 'Patient C', purpose: 'Nasya Therapy', status: 'Pending' },
 ];
 
 export default function DashboardPage() {
-  const [time, setTime] = useState('');
-  useEffect(() => {
-    setTime(new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
-  }, []);
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Greeting */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1 className="text-2xl font-display font-bold text-primary-dark">Good Morning, Doctor 👋</h1>
-          <p className="text-gray-500 text-sm mt-1">{time}</p>
+          <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 26, fontWeight: 700, color: '#004324' }}>Good morning, Doctor 👋</h1>
+          <p style={{ fontSize: 13, color: '#707971', marginTop: 4 }}>{today}</p>
         </div>
-        <div className="flex gap-3">
-          <Link href="/treatments/new" className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors">
-            + New Treatment
-          </Link>
-          <Link href="/appointments" className="border border-primary text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors">
-            View Calendar
-          </Link>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Link href="/treatments/new" style={{ background: '#1A5C38', color: '#fff', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>+ New Treatment</Link>
+        </div>
+      </div>
+
+      {/* Award Badge */}
+      <div style={{ background: 'linear-gradient(135deg, #1A5C38 0%, #2E7D52 100%)', borderRadius: 12, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ width: 40, height: 40, background: '#C9A84C', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🏆</div>
+        <div>
+          <p style={{ color: '#C9A84C', fontWeight: 700, fontSize: 13 }}>AYUSH TV National Health Award 2024</p>
+          <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 }}>APJ TRUE LIFE Ayurvedic Medical Centre — Recognized for Clinical Excellence</p>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {kpis.map(k => (
-          <div key={k.label} className={`border rounded-xl p-5 ${k.color}`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-2xl">{k.icon}</span>
-              <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">{k.trend}</span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        {KPI.map(k => (
+          <div key={k.label} style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#707971', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{k.label}</span>
+              <div style={{ width: 32, height: 32, background: k.color, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{k.icon}</div>
             </div>
-            <p className="text-3xl font-bold text-gray-800">{k.value}</p>
-            <p className="text-sm text-gray-500 mt-1">{k.label}</p>
+            <p style={{ fontSize: 28, fontWeight: 700, color: k.text }}>{k.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {/* Bottom grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
         {/* Today's Schedule */}
-        <div className="xl:col-span-2 bg-white border border-outline-variant rounded-xl">
-          <div className="p-5 border-b border-outline-variant flex items-center justify-between">
-            <h2 className="font-semibold text-gray-800">Today's Schedule</h2>
-            <Link href="/appointments" className="text-sm text-primary hover:underline">View all</Link>
+        <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #E1F2E8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111E18' }}>Today's Schedule</h2>
+            <Link href="/appointments" style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>View All →</Link>
           </div>
-          <div className="p-5">
-            <div className="flex flex-col items-center py-8 text-gray-400">
-              <span className="text-4xl mb-3">📅</span>
-              <p className="font-medium">No appointments today</p>
-              <p className="text-sm mt-1">Book an appointment to get started</p>
-              <Link href="/appointments" className="mt-4 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-dark transition-colors">
-                + Book Appointment
-              </Link>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#EDFDF3' }}>
+                {['Time', 'Patient', 'Purpose', 'Status'].map(h => (
+                  <th key={h} style={{ padding: '10px 20px', fontSize: 11, fontWeight: 600, color: '#707971', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {TODAY_SCHEDULE.map((row, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #E1F2E8' }}>
+                  <td style={{ padding: '14px 20px', fontSize: 13, color: '#404941', fontFamily: 'monospace' }}>{row.time}</td>
+                  <td style={{ padding: '14px 20px', fontSize: 13, fontWeight: 600, color: '#111E18' }}>{row.patient}</td>
+                  <td style={{ padding: '14px 20px', fontSize: 13, color: '#404941' }}>{row.purpose}</td>
+                  <td style={{ padding: '14px 20px' }}>
+                    <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: row.status === 'Confirmed' ? '#EAF4EC' : '#FFF8E1', color: row.status === 'Confirmed' ? '#1A5C38' : '#C9A84C' }}>{row.status}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {TODAY_SCHEDULE.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: '#707971' }}>
+              <p>No appointments today</p>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Recent Messages */}
-        <div className="bg-white border border-outline-variant rounded-xl">
-          <div className="p-5 border-b border-outline-variant flex items-center justify-between">
-            <h2 className="font-semibold text-gray-800">Recent Messages</h2>
-            <Link href="/chat" className="text-sm text-primary hover:underline">View all</Link>
-          </div>
-          <div className="p-5">
-            <div className="flex flex-col items-center py-8 text-gray-400">
-              <span className="text-4xl mb-3">💬</span>
-              <p className="font-medium">No messages yet</p>
-              <p className="text-sm mt-1">Messages appear when patients start a treatment</p>
+        {/* Active Treatments mini */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #E1F2E8' }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111E18' }}>Active Treatments</h3>
+              <Link href="/treatments" style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>View All</Link>
+            </div>
+            <div style={{ textAlign: 'center', padding: '24px 0', color: '#707971' }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
+              <p style={{ fontSize: 13 }}>No active treatments</p>
+              <Link href="/treatments/new" style={{ display: 'inline-block', marginTop: 12, background: '#1A5C38', color: '#fff', borderRadius: 8, padding: '7px 14px', fontSize: 12, textDecoration: 'none', fontWeight: 600 }}>+ Create Treatment</Link>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Active Treatments */}
-      <div className="bg-white border border-outline-variant rounded-xl">
-        <div className="p-5 border-b border-outline-variant flex items-center justify-between">
-          <h2 className="font-semibold text-gray-800">Active Treatment Plans</h2>
-          <Link href="/treatments" className="text-sm text-primary hover:underline">View all</Link>
-        </div>
-        <div className="p-5">
-          <div className="flex flex-col items-center py-8 text-gray-400">
-            <span className="text-4xl mb-3">📋</span>
-            <p className="font-medium">No active treatments</p>
-            <p className="text-sm mt-1">Create a treatment plan for a patient to begin</p>
-            <Link href="/treatments/new" className="mt-4 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary-dark transition-colors">
-              + New Treatment Plan
-            </Link>
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 20 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111E18', marginBottom: 12 }}>Quick Actions</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                { label: '✍️ Write Prescription', href: '/treatments' },
+                { label: '📅 New Appointment', href: '/appointments' },
+                { label: '💬 Open Chat', href: '/chat' },
+              ].map(a => (
+                <Link key={a.label} href={a.href} style={{ display: 'block', padding: '9px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, textDecoration: 'none', background: '#EDFDF3', color: '#1A5C38', border: '1px solid #E1F2E8' }}>{a.label}</Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -1,114 +1,82 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function NewTreatmentPage() {
-  const router = useRouter();
-  const [form, setForm] = useState({
-    planName: '', diagnosis: '', startDate: '', endDate: '',
-    totalPhases: '1', clinicalNotes: '', doshaAssessment: '',
-    specialInstructions: '',
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  function update(field: string, value: string) {
-    setForm(prev => ({ ...prev, [field]: value }));
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      // TODO: POST to /api/v1/treatments
-      await new Promise(r => setTimeout(r, 800));
-      router.push('/treatments');
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [phases, setPhases] = useState(1);
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/treatments" className="text-gray-400 hover:text-gray-600">← Treatments</Link>
-        <h1 className="text-2xl font-display font-bold text-primary-dark">Create Treatment Plan</h1>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#707971' }}>
+        <Link href="/treatments" style={{ color: '#707971', textDecoration: 'none' }}>Treatments</Link>
+        <span>/</span>
+        <span style={{ color: '#111E18' }}>New Treatment Plan</span>
       </div>
+      <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 700, color: '#004324' }}>Create Treatment Plan</h1>
 
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm">{error}</div>}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20 }}>
+        {/* Form */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 24 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: '#111E18', marginBottom: 20 }}>Plan Details</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Treatment Plan Name *</label>
+                <input placeholder="e.g. Nasal Polyp - Nasya Course" style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', outline: 'none' }} />
+              </div>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Diagnosis *</label>
+                <input placeholder="Clinical diagnosis" style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Start Date *</label>
+                <input type="date" style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>End Date (Estimated)</label>
+                <input type="date" style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Total Phases *</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <button onClick={() => setPhases(p => Math.max(1, p - 1))} style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid #C0C9BF', background: '#fff', cursor: 'pointer', fontSize: 16 }}>−</button>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: '#1A5C38', minWidth: 24, textAlign: 'center' }}>{phases}</span>
+                  <button onClick={() => setPhases(p => p + 1)} style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid #C0C9BF', background: '#fff', cursor: 'pointer', fontSize: 16 }}>+</button>
+                </div>
+              </div>
+            </div>
+          </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white border border-outline-variant rounded-xl p-6 space-y-5">
-          <h2 className="font-semibold text-gray-700 pb-2 border-b border-outline-variant">Plan Details</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Plan Name <span className="text-red-500">*</span></label>
-              <input required value={form.planName} onChange={e => update('planName', e.target.value)}
-                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="e.g. Nasal Polyp — Nasya Course" />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis <span className="text-red-500">*</span></label>
-              <input required value={form.diagnosis} onChange={e => update('diagnosis', e.target.value)}
-                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Clinical diagnosis" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date <span className="text-red-500">*</span></label>
-              <input required type="date" value={form.startDate} onChange={e => update('startDate', e.target.value)}
-                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Estimated End Date</label>
-              <input type="date" value={form.endDate} onChange={e => update('endDate', e.target.value)}
-                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Phases <span className="text-red-500">*</span></label>
-              <input required type="number" min="1" max="20" value={form.totalPhases}
-                onChange={e => update('totalPhases', e.target.value)}
-                className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-            </div>
+          {/* Clinical Notes */}
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 24 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: '#111E18', marginBottom: 4 }}>Clinical Notes</h3>
+            <p style={{ fontSize: 12, color: '#707971', marginBottom: 16 }}>Internal notes — not visible to patient</p>
+            <textarea placeholder="Dosha assessment, clinical observations, internal notes..." rows={5} style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 13, resize: 'vertical', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
+          </div>
+
+          {/* Patient Instructions */}
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 24 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: '#111E18', marginBottom: 4 }}>Special Patient Instructions</h3>
+            <p style={{ fontSize: 12, color: '#707971', marginBottom: 16 }}>Visible to patient on their app</p>
+            <textarea placeholder="Special instructions for the patient..." rows={4} style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 13, resize: 'vertical', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
+          </div>
+
+          <div style={{ display: 'flex', gap: 12 }}>
+            <Link href="/treatments" style={{ flex: 1, textAlign: 'center', background: '#EDFDF3', color: '#1A5C38', border: '1.5px solid #1A5C38', borderRadius: 8, padding: '11px', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Cancel</Link>
+            <button style={{ flex: 2, background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '11px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Save & Publish to Patient</button>
           </div>
         </div>
 
-        <div className="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold text-gray-700 pb-2 border-b border-outline-variant">Clinical Notes <span className="text-xs text-gray-400 font-normal">(Internal — not visible to patient)</span></h2>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Dosha Assessment</label>
-            <textarea value={form.doshaAssessment} onChange={e => update('doshaAssessment', e.target.value)} rows={3}
-              className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-              placeholder="Describe the dosha imbalance and assessment..." />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Clinical Notes</label>
-            <textarea value={form.clinicalNotes} onChange={e => update('clinicalNotes', e.target.value)} rows={4}
-              className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-              placeholder="Detailed clinical notes for this treatment plan..." />
+        {/* Patient selector sidebar */}
+        <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 20, height: 'fit-content' }}>
+          <h3 style={{ fontSize: 14, fontWeight: 600, color: '#111E18', marginBottom: 16 }}>Select Patient</h3>
+          <input placeholder="Search patient..." style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', outline: 'none', marginBottom: 12 }} />
+          <div style={{ textAlign: 'center', padding: '24px 0', color: '#707971' }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>👤</div>
+            <p style={{ fontSize: 13 }}>Search to select a patient</p>
           </div>
         </div>
-
-        <div className="bg-white border border-outline-variant rounded-xl p-6">
-          <h2 className="font-semibold text-gray-700 pb-2 mb-4 border-b border-outline-variant">Patient Instructions <span className="text-xs text-gray-400 font-normal">(Visible to patient in app)</span></h2>
-          <textarea value={form.specialInstructions} onChange={e => update('specialInstructions', e.target.value)} rows={3}
-            className="w-full border border-outline rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-            placeholder="Special instructions visible to the patient in the mobile app..." />
-        </div>
-
-        <div className="flex gap-3">
-          <button type="submit" disabled={loading}
-            className="bg-primary text-white px-6 py-2.5 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-60">
-            {loading ? 'Creating...' : 'Create & Publish to Patient'}
-          </button>
-          <Link href="/treatments" className="border border-outline px-6 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-surface transition-colors">
-            Cancel
-          </Link>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }
