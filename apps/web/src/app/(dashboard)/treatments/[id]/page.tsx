@@ -1,146 +1,148 @@
 'use client';
-import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useState } from 'react';
 
-const PLAN = {
-  id: '1', patientName: 'Ramesh Kumar', patientCode: 'ATL-0001',
-  planName: 'Nasal Polyp — Nasya Course', diagnosis: 'Nasal polyp with chronic sinusitis. Vata-Kapha imbalance.',
-  status: 'ACTIVE', totalPhases: 4, startDate: '2026-05-01', endDate: '2026-07-31',
-  specialInstructions: 'Avoid cold beverages and dairy products throughout the treatment.',
-  phases: [
-    { number: 1, name: 'Purvakarma — Preparation', status: 'COMPLETED', goal: 'Prepare the body for main Panchakarma procedures.', medicines: [{ name: 'Triphala Churna', dosage: '5g', frequency: 'Once daily', timing: 'Bedtime with warm water' }], diet: [{ type: 'CONSUME', item: 'Warm soups, ginger tea, light khichdi' }, { type: 'AVOID', item: 'Dairy, cold drinks, fried food' }] },
-    { number: 2, name: 'Nasya Therapy', status: 'IN_PROGRESS', goal: 'Clear nasal passages and reduce polyp inflammation using medicated oils.', medicines: [{ name: 'Anu Thailam', dosage: '2 drops each nostril', frequency: 'Twice daily', timing: 'Morning and evening on empty stomach' }, { name: 'Kanchanara Guggulu', dosage: '2 tablets', frequency: 'Twice daily', timing: 'After food' }], diet: [{ type: 'CONSUME', item: 'Warm water, tulsi tea, pomegranate juice' }, { type: 'AVOID', item: 'Cold water, ice cream, bananas, curd' }] },
-    { number: 3, name: 'Rasayana — Rejuvenation', status: 'SCHEDULED', goal: 'Strengthen immune system and prevent recurrence.', medicines: [], diet: [] },
-    { number: 4, name: 'Maintenance', status: 'SCHEDULED', goal: 'Long-term maintenance with lifestyle guidance.', medicines: [], diet: [] },
-  ]
-};
+const TABS = ['Details & Notes', 'Medicines', 'Diet Plan', 'Documents'];
 
 export default function TreatmentDetailPage() {
-  const [activePhase, setActivePhase] = useState(1);
-  const [activeTab, setActiveTab] = useState<'details' | 'medicines' | 'diet'>('details');
-  const phase = PLAN.phases[activePhase];
-
-  const STATUS_STYLE: Record<string, string> = { COMPLETED: 'chip-completed', IN_PROGRESS: 'chip-progress', SCHEDULED: 'chip-pending' };
+  const { id } = useParams();
+  const [activeTab, setActiveTab] = useState('Details & Notes');
+  const [showComplete, setShowComplete] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-        <Link href="/patients" style={{ color: 'var(--primary)' }}>Patients</Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#707971' }}>
+        <Link href="/treatments" style={{ color: '#707971', textDecoration: 'none' }}>Treatments</Link>
         <span>/</span>
-        <Link href={`/patients/ATL-0001`} style={{ color: 'var(--primary)' }}>{PLAN.patientName}</Link>
-        <span>/</span>
-        <span>{PLAN.planName}</span>
+        <span style={{ color: '#111E18' }}>Treatment Detail</span>
       </div>
 
       {/* Header */}
-      <div className="rounded-xl border p-6" style={{ background: 'var(--surface)', borderColor: '#D4E8D8' }}>
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="font-display text-xl font-bold" style={{ color: 'var(--primary-dark)' }}>{PLAN.planName}</h1>
-              <span className="text-xs px-2 py-0.5 rounded-full chip-active font-medium">{PLAN.status}</span>
-            </div>
-            <p className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>{PLAN.diagnosis}</p>
-            <p className="text-xs" style={{ color: 'var(--outline)' }}>{PLAN.startDate} → {PLAN.endDate} · {PLAN.totalPhases} phases</p>
-            {PLAN.specialInstructions && (
-              <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: '#FFF3E0', color: '#E65100' }}>
-                ⚠️ {PLAN.specialInstructions}
-              </div>
-            )}
-          </div>
-          <button className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ background: 'var(--error)' }}>Complete Treatment</button>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <h1 className="font-display" style={{ fontSize: 22, fontWeight: 700, color: '#004324' }}>Treatment Plan</h1>
+          <span style={{ display: 'inline-block', marginTop: 6, padding: '3px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: '#EAF4EC', color: '#1A5C38' }}>Active · Phase 1 of 3</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Link href={`/treatments/${id}/phases/new`} style={{ border: '1.5px solid #1A5C38', color: '#1A5C38', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>+ Add Phase</Link>
+          <button onClick={() => setShowComplete(true)} style={{ background: '#BA1A1A', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Complete Treatment</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Phase list */}
-        <div className="space-y-2">
-          {PLAN.phases.map((p, i) => (
-            <button key={i} onClick={() => setActivePhase(i)}
-              className="w-full text-left px-4 py-3 rounded-xl border transition-all"
-              style={activePhase === i ? { background: 'var(--primary)', color: 'white', borderColor: 'var(--primary)' } : { background: 'var(--surface)', borderColor: '#D4E8D8', color: 'var(--text)' }}>
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs font-bold">Phase {p.number}</span>
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${activePhase !== i ? STATUS_STYLE[p.status] : 'bg-white/20 text-white'}`}>{p.status.replace('_', ' ')}</span>
-              </div>
-              <p className={`text-xs ${activePhase === i ? 'text-green-100' : ''}`} style={activePhase !== i ? { color: 'var(--text-muted)' } : {}}>{p.name}</p>
-            </button>
-          ))}
-          <button className="w-full px-4 py-3 rounded-xl border border-dashed text-sm text-center transition-all" style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>+ Add Phase</button>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20 }}>
+        {/* Main content */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Phase tabs */}
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ borderBottom: '1px solid #E1F2E8', display: 'flex', overflow: 'auto' }}>
+              {TABS.map(t => (
+                <button key={t} onClick={() => setActiveTab(t)} style={{
+                  padding: '12px 20px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                  background: activeTab === t ? '#fff' : '#EDFDF3',
+                  color: activeTab === t ? '#1A5C38' : '#707971',
+                  borderBottom: activeTab === t ? '2px solid #1A5C38' : '2px solid transparent',
+                }}>{t}</button>
+              ))}
+            </div>
+            <div style={{ padding: 24 }}>
+              {activeTab === 'Details & Notes' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: '#707971', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Diagnosis</p>
+                    <p style={{ fontSize: 14, color: '#111E18' }}>—</p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: '#707971', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Clinical Notes (Internal)</p>
+                    <p style={{ fontSize: 14, color: '#111E18' }}>—</p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: '#707971', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Patient Instructions</p>
+                    <p style={{ fontSize: 14, color: '#111E18' }}>—</p>
+                  </div>
+                  <div style={{ marginTop: 8 }}>
+                    <button style={{ background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>+ Add Clinical Note</button>
+                  </div>
+                </div>
+              )}
+              {activeTab === 'Medicines' && (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#707971' }}>
+                  <div style={{ fontSize: 40, marginBottom: 8 }}>💊</div>
+                  <p>No medicines added yet</p>
+                  <button style={{ marginTop: 16, background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}>+ Add Medicine</button>
+                </div>
+              )}
+              {activeTab === 'Diet Plan' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                  <div>
+                    <h4 style={{ fontSize: 14, fontWeight: 600, color: '#1A5C38', marginBottom: 12 }}>✓ To Consume</h4>
+                    <p style={{ fontSize: 13, color: '#707971' }}>No items added yet</p>
+                    <button style={{ marginTop: 12, background: '#EAF4EC', color: '#1A5C38', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>+ Add Item</button>
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: 14, fontWeight: 600, color: '#BA1A1A', marginBottom: 12 }}>✗ To Avoid</h4>
+                    <p style={{ fontSize: 13, color: '#707971' }}>No items added yet</p>
+                    <button style={{ marginTop: 12, background: '#FFEBEE', color: '#BA1A1A', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>+ Add Item</button>
+                  </div>
+                </div>
+              )}
+              {activeTab === 'Documents' && (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#707971' }}>
+                  <div style={{ fontSize: 40, marginBottom: 8 }}>📄</div>
+                  <p>No documents uploaded</p>
+                  <button style={{ marginTop: 16, background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}>Upload Document</button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Phase detail */}
-        <div className="md:col-span-3 rounded-xl border" style={{ background: 'var(--surface)', borderColor: '#D4E8D8' }}>
-          <div className="px-5 py-4 border-b" style={{ borderColor: '#E8F5E9' }}>
-            <h2 className="font-semibold" style={{ color: 'var(--primary-dark)' }}>Phase {phase.number}: {phase.name}</h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{phase.goal}</p>
-          </div>
-
-          {/* Tab bar */}
-          <div className="flex border-b" style={{ borderColor: '#E8F5E9' }}>
-            {(['details','medicines','diet'] as const).map(t => (
-              <button key={t} onClick={() => setActiveTab(t)}
-                className="px-5 py-3 text-sm font-medium border-b-2 transition-all capitalize"
-                style={activeTab === t ? { borderColor: 'var(--primary)', color: 'var(--primary)' } : { borderColor: 'transparent', color: 'var(--text-muted)' }}>
-                {t}
-              </button>
+        {/* Sidebar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 20 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: '#111E18', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid #E1F2E8' }}>Treatment Overview</h3>
+            {[['Start Date', '—'], ['End Date', '—'], ['Progress', '0%'], ['Phase', '1 of 3']].map(([l, v]) => (
+              <div key={l} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 12, color: '#707971' }}>{l}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#111E18' }}>{v}</span>
+              </div>
             ))}
           </div>
-
-          <div className="p-5">
-            {activeTab === 'details' && (
-              <div>
-                <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Phase goal and clinical notes.</p>
-                <div className="p-4 rounded-lg text-sm" style={{ background: 'var(--surface-tint)', color: 'var(--text)' }}>{phase.goal || 'No details added.'}</div>
-              </div>
-            )}
-
-            {activeTab === 'medicines' && (
-              <div className="space-y-3">
-                {phase.medicines.length === 0 ? (
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No medicines added for this phase.</p>
-                ) : phase.medicines.map((m, i) => (
-                  <div key={i} className="p-4 rounded-lg border" style={{ borderColor: '#D4E8D8' }}>
-                    <p className="font-medium text-sm" style={{ color: 'var(--primary-dark)' }}>{m.name}</p>
-                    <div className="mt-2 grid grid-cols-3 gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                      <span>Dosage: <strong>{m.dosage}</strong></span>
-                      <span>Frequency: <strong>{m.frequency}</strong></span>
-                      <span>Timing: <strong>{m.timing}</strong></span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {activeTab === 'diet' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--secondary)' }}>✓ To Consume</h3>
-                  {phase.diet.filter(d => d.type === 'CONSUME').map((d, i) => (
-                    <div key={i} className="flex items-start gap-2 py-1.5">
-                      <span className="text-green-500 mt-0.5">✓</span>
-                      <span className="text-sm" style={{ color: 'var(--text)' }}>{d.item}</span>
-                    </div>
-                  ))}
-                  {phase.diet.filter(d => d.type === 'CONSUME').length === 0 && <p className="text-xs" style={{ color: 'var(--outline)' }}>None added.</p>}
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--error)' }}>✗ To Avoid</h3>
-                  {phase.diet.filter(d => d.type === 'AVOID').map((d, i) => (
-                    <div key={i} className="flex items-start gap-2 py-1.5">
-                      <span className="text-red-500 mt-0.5">✗</span>
-                      <span className="text-sm" style={{ color: 'var(--text)' }}>{d.item}</span>
-                    </div>
-                  ))}
-                  {phase.diet.filter(d => d.type === 'AVOID').length === 0 && <p className="text-xs" style={{ color: 'var(--outline)' }}>None added.</p>}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
+
+      {/* Complete Treatment Modal */}
+      {showComplete && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ background: '#fff', borderRadius: 16, padding: 32, width: 480, maxWidth: '90vw' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111E18', marginBottom: 8 }}>Complete Treatment</h2>
+            <p style={{ fontSize: 14, color: '#404941', marginBottom: 20 }}>The following data will be <strong>preserved</strong>:</p>
+            {['Treatment Plan Details', 'Assessment Images', 'Prescription History'].map(i => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <span style={{ color: '#1A5C38' }}>✓</span>
+                <span style={{ fontSize: 13, color: '#111E18' }}>{i}</span>
+              </div>
+            ))}
+            <p style={{ fontSize: 14, color: '#BA1A1A', margin: '16px 0 8px', fontWeight: 600 }}>The following will be DELETED:</p>
+            {['Doctor–Patient Chat', 'Chat Attachments'].map(i => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <span style={{ color: '#BA1A1A' }}>✗</span>
+                <span style={{ fontSize: 13, color: '#111E18' }}>{i}</span>
+              </div>
+            ))}
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 20, cursor: 'pointer' }}>
+              <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} />
+              <span style={{ fontSize: 13, color: '#404941' }}>I understand chat messages cannot be recovered.</span>
+            </label>
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              <button onClick={() => setShowComplete(false)} style={{ flex: 1, background: '#EDFDF3', color: '#1A5C38', border: '1.5px solid #1A5C38', borderRadius: 8, padding: '10px', fontSize: 14, cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+              <button disabled={!consent} style={{ flex: 1, background: consent ? '#BA1A1A' : '#eee', color: consent ? '#fff' : '#999', border: 'none', borderRadius: 8, padding: '10px', fontSize: 14, cursor: consent ? 'pointer' : 'not-allowed', fontWeight: 600 }}>Yes, Complete Treatment</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

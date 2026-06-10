@@ -1,17 +1,19 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Providers } from '@/providers/Providers';
+import { QueryProvider } from '@/providers/QueryProvider';
 
 export const metadata: Metadata = {
-  title: 'APJ TRUE LIFE — Doctor Dashboard',
-  description: 'Clinical management dashboard for APJ TRUE LIFE Ayurvedic Medical Centre',
+  title: 'APJ TRUE LIFE | Clinical Dashboard',
+  description: 'Ayurvedic Medical Centre — Doctor Clinical Dashboard',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <QueryProvider>
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

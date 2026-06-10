@@ -1,15 +1,22 @@
+export type Role = 'PATIENT' | 'DOCTOR' | 'ADMIN';
+
+export type TreatmentStatus = 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+export type PhaseStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED';
+export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
+
 export interface Patient {
   id: string;
   userId: string;
   fullName: string;
   dateOfBirth: string;
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
+  gender: Gender;
   bloodGroup?: string;
   address?: string;
   emergencyContact?: string;
   profileImageUrl?: string;
   prakriti?: string;
-  allergies?: string[];
+  allergies: string[];
   patientCode: string;
   createdAt: string;
 }
@@ -20,7 +27,7 @@ export interface TreatmentPlan {
   doctorId: string;
   planName: string;
   diagnosis: string;
-  status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  status: TreatmentStatus;
   totalPhases: number;
   startDate: string;
   endDate?: string;
@@ -29,6 +36,7 @@ export interface TreatmentPlan {
   doshaAssessment?: string;
   specialInstructions?: string;
   phases?: TreatmentPhase[];
+  createdAt: string;
 }
 
 export interface TreatmentPhase {
@@ -38,15 +46,15 @@ export interface TreatmentPhase {
   name: string;
   description?: string;
   phaseGoal?: string;
-  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED';
+  status: PhaseStatus;
   startDate?: string;
   endDate?: string;
-  medicines?: Medicine[];
+  medicines?: PhaseMedicine[];
   dietGuidelines?: DietGuideline[];
   documents?: PhaseDocument[];
 }
 
-export interface Medicine {
+export interface PhaseMedicine {
   id: string;
   phaseId: string;
   medicineName: string;
@@ -55,6 +63,7 @@ export interface Medicine {
   timing?: string;
   route?: string;
   instructions?: string;
+  displayOrder: number;
 }
 
 export interface DietGuideline {
@@ -63,6 +72,7 @@ export interface DietGuideline {
   type: 'CONSUME' | 'AVOID';
   item: string;
   notes?: string;
+  displayOrder: number;
 }
 
 export interface PhaseDocument {
@@ -70,7 +80,6 @@ export interface PhaseDocument {
   phaseId: string;
   documentName: string;
   cloudinaryUrl: string;
-  cloudinaryPublicId: string;
   documentType: 'PRESCRIPTION' | 'DIET_CHART' | 'ASSESSMENT_IMAGE' | 'OTHER';
   createdAt: string;
 }
@@ -79,15 +88,17 @@ export interface Appointment {
   id: string;
   patientId: string;
   doctorId: string;
+  treatmentPlanId?: string;
+  serviceId?: string;
   appointmentDate: string;
   startTime: string;
   endTime: string;
   type: 'IN_CLINIC' | 'ONLINE';
-  status: 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  status: AppointmentStatus;
   reason?: string;
   doctorNotes?: string;
-  cancelledReason?: string;
   createdBy: 'PATIENT' | 'DOCTOR';
+  createdAt: string;
 }
 
 export interface ChatMessage {

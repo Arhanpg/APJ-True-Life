@@ -2,93 +2,71 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
-const PATIENT = {
-  id: 'ATL-0001', name: 'Ramesh Kumar', email: 'ramesh@example.com', phone: '+91 98765 43210',
-  dob: '1981-03-15', age: 45, gender: 'Male', bloodGroup: 'O+', address: 'MG Road, Bengaluru 560001',
-  prakriti: 'Vata-Pitta', emergencyContact: '+91 98765 00001',
-  treatment: { name: 'Nasal Polyp — Nasya Course', phase: 2, total: 4, status: 'ACTIVE', start: '2026-05-01' },
-  appointments: [
-    { date: '2026-06-08', time: '10:00', type: 'Nasya Treatment', status: 'COMPLETED' },
-    { date: '2026-06-10', time: '10:00', type: 'Nasya Treatment', status: 'CONFIRMED' },
-  ]
-};
-
 export default function PatientDetailPage() {
   const { id } = useParams();
-
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-        <Link href="/patients" style={{ color: 'var(--primary)' }}>Patients</Link>
-        <span>/</span>
-        <span>{PATIENT.name}</span>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Link href="/patients" style={{ color: '#707971', textDecoration: 'none', fontSize: 14 }}>← Patients</Link>
+        <h1 className="font-display" style={{ fontSize: 24, fontWeight: 700, color: '#004324' }}>Patient Profile</h1>
       </div>
 
-      {/* Profile header */}
-      <div className="rounded-xl border p-6" style={{ background: 'var(--surface)', borderColor: '#D4E8D8' }}>
-        <div className="flex items-start gap-5">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0" style={{ background: 'var(--secondary)' }}>
-            {PATIENT.name[0]}
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="font-display text-2xl font-bold" style={{ color: 'var(--primary-dark)' }}>{PATIENT.name}</h1>
-              <span className="text-xs px-2 py-0.5 rounded-full chip-active font-medium">{PATIENT.prakriti}</span>
-            </div>
-            <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>{PATIENT.id} · {PATIENT.email} · {PATIENT.phone}</p>
-            <div className="flex gap-3">
-              <button className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ background: 'var(--primary)' }}>+ New Treatment</button>
-              <button className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>Send Message</button>
-              <button className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: '#C0C9BF', color: 'var(--text-muted)' }}>Book Appointment</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Personal Info */}
-        <div className="rounded-xl border p-5" style={{ background: 'var(--surface)', borderColor: '#D4E8D8' }}>
-          <h2 className="font-semibold mb-4" style={{ color: 'var(--primary-dark)' }}>Personal Information</h2>
-          {[['Date of Birth', PATIENT.dob], ['Age', `${PATIENT.age} years`], ['Gender', PATIENT.gender], ['Blood Group', PATIENT.bloodGroup], ['Prakriti', PATIENT.prakriti], ['Emergency Contact', PATIENT.emergencyContact], ['Address', PATIENT.address]].map(([k, v]) => (
-            <div key={k} className="flex py-2 border-b" style={{ borderColor: '#E8F5E9' }}>
-              <span className="w-40 text-xs font-medium flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{k}</span>
-              <span className="text-sm" style={{ color: 'var(--text)' }}>{v}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Current Treatment */}
-        <div className="space-y-4">
-          <div className="rounded-xl border p-5" style={{ background: 'var(--surface)', borderColor: '#D4E8D8' }}>
-            <h2 className="font-semibold mb-4" style={{ color: 'var(--primary-dark)' }}>Current Treatment</h2>
-            <p className="font-medium text-sm mb-1" style={{ color: 'var(--text)' }}>{PATIENT.treatment.name}</p>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs px-2 py-0.5 rounded-full chip-active font-medium">{PATIENT.treatment.status}</span>
-              <span className="text-xs" style={{ color: 'var(--outline)' }}>Started {PATIENT.treatment.start}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
-              <span>Phase {PATIENT.treatment.phase} of {PATIENT.treatment.total}</span>
-              <span>{Math.round((PATIENT.treatment.phase/PATIENT.treatment.total)*100)}%</span>
-            </div>
-            <div className="h-2 rounded-full" style={{ background: 'var(--surface-tint)' }}>
-              <div className="h-2 rounded-full" style={{ width: `${(PATIENT.treatment.phase/PATIENT.treatment.total)*100}%`, background: 'var(--secondary)' }} />
-            </div>
-            <Link href={`/treatments/1`} className="mt-3 inline-block text-xs font-medium" style={{ color: 'var(--primary)' }}>View Full Treatment →</Link>
-          </div>
-
-          {/* Recent appointments */}
-          <div className="rounded-xl border p-5" style={{ background: 'var(--surface)', borderColor: '#D4E8D8' }}>
-            <h2 className="font-semibold mb-3" style={{ color: 'var(--primary-dark)' }}>Recent Appointments</h2>
-            {PATIENT.appointments.map((a, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b" style={{ borderColor: '#E8F5E9' }}>
-                <div>
-                  <p className="text-sm">{a.type}</p>
-                  <p className="text-xs" style={{ color: 'var(--outline)' }}>{a.date} · {a.time}</p>
-                </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium chip-${a.status.toLowerCase()}`}>{a.status}</span>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
+        {/* Left: main info */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Profile card */}
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#1A5C38', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ color: '#fff', fontSize: 24, fontWeight: 700 }}>P</span>
               </div>
-            ))}
+              <div>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111E18' }}>—</h2>
+                <p style={{ fontSize: 13, color: '#404941', marginTop: 2 }}>Patient ID: #{id?.toString().slice(0,8).toUpperCase()}</p>
+                <span style={{ display: 'inline-block', marginTop: 6, padding: '2px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: '#EAF4EC', color: '#1A5C38' }}>Active</span>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {[['Date of Birth', '—'], ['Gender', '—'], ['Blood Group', '—'], ['Prakriti', '—'], ['Phone', '—'], ['Email', '—']].map(([label, val]) => (
+                <div key={label}>
+                  <p style={{ fontSize: 11, color: '#707971', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</p>
+                  <p style={{ fontSize: 14, color: '#111E18', marginTop: 2 }}>{val}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Treatment summary */}
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #E1F2E8' }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: '#111E18' }}>Treatment History</h3>
+              <Link href={`/treatments/new`} style={{ background: '#1A5C38', color: '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 12, textDecoration: 'none', fontWeight: 600 }}>+ New Treatment</Link>
+            </div>
+            <div style={{ textAlign: 'center', padding: '40px 0', color: '#707971' }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>📋</div>
+              <p style={{ fontWeight: 500, color: '#404941' }}>No treatments yet</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: quick actions */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 20 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: '#111E18', marginBottom: 12 }}>Quick Actions</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                { label: '+ New Treatment', href: '/treatments/new', primary: true },
+                { label: '📅 Book Appointment', href: '/appointments', primary: false },
+                { label: '💬 Send Message', href: '/chat', primary: false },
+              ].map(a => (
+                <Link key={a.label} href={a.href} style={{
+                  display: 'block', textAlign: 'center', padding: '9px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                  background: a.primary ? '#1A5C38' : 'transparent',
+                  color: a.primary ? '#fff' : '#1A5C38',
+                  border: a.primary ? 'none' : '1.5px solid #1A5C38',
+                }}>{a.label}</Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
