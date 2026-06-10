@@ -1,118 +1,110 @@
 'use client';
 import Link from 'next/link';
 
-const KPI = [
-  { label: 'Active Patients', value: '—', trend: '', icon: '👤', color: '#EAF4EC', text: '#1A5C38' },
-  { label: "Today's Appointments", value: '—', trend: '', icon: '📅', color: '#E8F4FF', text: '#006494' },
-  { label: 'Unread Messages', value: '—', trend: '', icon: '💬', color: '#FFF8E1', text: '#C9A84C' },
-  { label: 'Completed This Week', value: '—', trend: '', icon: '✅', color: '#F3F0EC', text: '#404941' },
+const KPI_CARDS = [
+  { label: 'Active Patients', value: '—', sub: 'Total enrolled', icon: '👥', color: '#1A5C38' },
+  { label: "Today's Appointments", value: '—', sub: 'Scheduled today', icon: '📅', color: '#2E7D52' },
+  { label: 'Unread Messages', value: '—', sub: 'Pending replies', icon: '💬', color: '#C9A84C' },
+  { label: 'Completed (This Week)', value: '—', sub: 'Treatments done', icon: '✅', color: '#004324' },
 ];
 
-const TODAY_SCHEDULE = [
-  { time: '09:00 AM', patient: 'Patient A', purpose: 'General Consultation', status: 'Confirmed' },
-  { time: '11:00 AM', patient: 'Patient B', purpose: 'Panchakarma Follow-up', status: 'Confirmed' },
-  { time: '02:00 PM', patient: 'Patient C', purpose: 'Nasya Therapy', status: 'Pending' },
+const QUICK_ACTIONS = [
+  { label: '✏️ Write Prescription', href: '/treatments' },
+  { label: '📅 New Appointment', href: '/appointments' },
+  { label: '👤 Add Patient', href: '/patients' },
+  { label: '⚙️ Clinic Settings', href: '/settings' },
 ];
 
 export default function DashboardPage() {
-  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Greeting */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ background: 'linear-gradient(135deg,#1A5C38,#2E7D52)', borderRadius: 16, padding: '24px 28px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 26, fontWeight: 700, color: '#004324' }}>Good morning, Doctor 👋</h1>
-          <p style={{ fontSize: 13, color: '#707971', marginTop: 4 }}>{today}</p>
+          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700, marginBottom: 4 }}>Welcome, Doctor 🌿</h1>
+          <p style={{ fontSize: 14, opacity: 0.8 }}>{today}</p>
+          <p style={{ fontSize: 12, marginTop: 6, opacity: 0.65, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ background: '#C9A84C', borderRadius: 4, padding: '2px 8px', color: '#fff', fontWeight: 600, fontSize: 11 }}>🏆 AYUSH TV National Health Award 2024</span>
+          </p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <Link href="/treatments/new" style={{ background: '#1A5C38', color: '#fff', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>+ New Treatment</Link>
-        </div>
-      </div>
-
-      {/* Award Badge */}
-      <div style={{ background: 'linear-gradient(135deg, #1A5C38 0%, #2E7D52 100%)', borderRadius: 12, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{ width: 40, height: 40, background: '#C9A84C', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🏆</div>
-        <div>
-          <p style={{ color: '#C9A84C', fontWeight: 700, fontSize: 13 }}>AYUSH TV National Health Award 2024</p>
-          <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 }}>APJ TRUE LIFE Ayurvedic Medical Centre — Recognized for Clinical Excellence</p>
+        <div style={{ textAlign: 'right', opacity: 0.9 }}>
+          <p style={{ fontSize: 13 }}>APJ TRUE LIFE</p>
+          <p style={{ fontSize: 11, opacity: 0.7 }}>Ayurvedic Medical Centre</p>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-        {KPI.map(k => (
-          <div key={k.label} style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#707971', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{k.label}</span>
-              <div style={{ width: 32, height: 32, background: k.color, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{k.icon}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+        {KPI_CARDS.map(k => (
+          <div key={k.label} style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: '20px 20px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: 28 }}>{k.icon}</span>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: k.color, marginTop: 6 }} />
             </div>
-            <p style={{ fontSize: 28, fontWeight: 700, color: k.text }}>{k.value}</p>
+            <p style={{ fontSize: 28, fontWeight: 700, color: '#111E18', lineHeight: 1 }}>{k.value}</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#111E18' }}>{k.label}</p>
+            <p style={{ fontSize: 11, color: '#707971' }}>{k.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Bottom grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
         {/* Today's Schedule */}
         <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #E1F2E8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111E18' }}>Today's Schedule</h2>
-            <Link href="/appointments" style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>View All →</Link>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111E18' }}>Today's Schedule</h2>
+            <Link href="/appointments" style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>View all →</Link>
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#EDFDF3' }}>
-                {['Time', 'Patient', 'Purpose', 'Status'].map(h => (
-                  <th key={h} style={{ padding: '10px 20px', fontSize: 11, fontWeight: 600, color: '#707971', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {TODAY_SCHEDULE.map((row, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #E1F2E8' }}>
-                  <td style={{ padding: '14px 20px', fontSize: 13, color: '#404941', fontFamily: 'monospace' }}>{row.time}</td>
-                  <td style={{ padding: '14px 20px', fontSize: 13, fontWeight: 600, color: '#111E18' }}>{row.patient}</td>
-                  <td style={{ padding: '14px 20px', fontSize: 13, color: '#404941' }}>{row.purpose}</td>
-                  <td style={{ padding: '14px 20px' }}>
-                    <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: row.status === 'Confirmed' ? '#EAF4EC' : '#FFF8E1', color: row.status === 'Confirmed' ? '#1A5C38' : '#C9A84C' }}>{row.status}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {TODAY_SCHEDULE.length === 0 && (
+          <div style={{ padding: 20 }}>
             <div style={{ textAlign: 'center', padding: '40px 0', color: '#707971' }}>
-              <p>No appointments today</p>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>📋</div>
+              <p style={{ fontWeight: 500, color: '#404941', marginBottom: 4 }}>No appointments today</p>
+              <p style={{ fontSize: 13 }}>Schedule a new appointment to get started</p>
+              <Link href="/appointments" style={{ display: 'inline-block', marginTop: 16, background: '#1A5C38', color: '#fff', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>+ New Appointment</Link>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Active Treatments mini */}
+        {/* Right sidebar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Quick Actions */}
           <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #E1F2E8' }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111E18' }}>Active Treatments</h3>
-              <Link href="/treatments" style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>View All</Link>
-            </div>
-            <div style={{ textAlign: 'center', padding: '24px 0', color: '#707971' }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
-              <p style={{ fontSize: 13 }}>No active treatments</p>
-              <Link href="/treatments/new" style={{ display: 'inline-block', marginTop: 12, background: '#1A5C38', color: '#fff', borderRadius: 8, padding: '7px 14px', fontSize: 12, textDecoration: 'none', fontWeight: 600 }}>+ Create Treatment</Link>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111E18', marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid #E1F2E8' }}>Quick Actions</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {QUICK_ACTIONS.map(a => (
+                <Link key={a.label} href={a.href} style={{ display: 'block', padding: '9px 12px', background: '#EDFDF3', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#1A5C38', textDecoration: 'none', border: '1px solid #D4E8D8' }}>{a.label}</Link>
+              ))}
             </div>
           </div>
 
+          {/* Recent Messages */}
           <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 20 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111E18', marginBottom: 12 }}>Quick Actions</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[
-                { label: '✍️ Write Prescription', href: '/treatments' },
-                { label: '📅 New Appointment', href: '/appointments' },
-                { label: '💬 Open Chat', href: '/chat' },
-              ].map(a => (
-                <Link key={a.label} href={a.href} style={{ display: 'block', padding: '9px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, textDecoration: 'none', background: '#EDFDF3', color: '#1A5C38', border: '1px solid #E1F2E8' }}>{a.label}</Link>
-              ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid #E1F2E8' }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111E18' }}>Recent Messages</h3>
+              <Link href="/chat" style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>View all</Link>
             </div>
+            <div style={{ textAlign: 'center', padding: '24px 0', color: '#707971' }}>
+              <div style={{ fontSize: 36, marginBottom: 8 }}>💬</div>
+              <p style={{ fontSize: 13 }}>No messages yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Active Treatment Plans */}
+      <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #E1F2E8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111E18' }}>Active Treatment Plans</h2>
+          <Link href="/treatments" style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>View all →</Link>
+        </div>
+        <div style={{ padding: 20 }}>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: '#707971' }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🌿</div>
+            <p style={{ fontWeight: 500, color: '#404941', marginBottom: 4 }}>No active treatments</p>
+            <p style={{ fontSize: 13 }}>Create a treatment plan to see it here</p>
+            <Link href="/treatments/new" style={{ display: 'inline-block', marginTop: 16, background: '#1A5C38', color: '#fff', borderRadius: 8, padding: '8px 20px', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>+ Create Treatment Plan</Link>
           </div>
         </div>
       </div>

@@ -1,49 +1,37 @@
 'use client';
-
-const ARCHIVED = [
-  { id: '1', planName: 'Panchakarma Detox', patientName: 'Priya Sharma', completedAt: '2026-05-20', totalPhases: 5, diagnosis: 'Vata-Pitta imbalance' },
-  { id: '2', planName: 'Shirodhara Course', patientName: 'Mohan Das', completedAt: '2026-03-14', totalPhases: 7, diagnosis: 'Chronic stress' },
-];
+import Link from 'next/link';
 
 export default function ArchivePage() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#004324', fontFamily: 'Playfair Display, serif' }}>Completed Treatments Archive</h1>
-        <p style={{ fontSize: 13, color: '#707971', marginTop: 2 }}>Read-only record of all completed treatment plans</p>
+        <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700, color: '#004324' }}>Completed Treatments Archive</h1>
+        <p style={{ fontSize: 13, color: '#707971', marginTop: 2 }}>Read-only records of all completed treatment plans</p>
       </div>
 
-      <div style={{ background: '#FFF8E1', border: '1px solid #FFE082', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#B7791F' }}>
-        ℹ️ Chat messages are automatically deleted upon treatment completion for privacy compliance.
+      <div style={{ background: '#FFF8E1', border: '1px solid #FFE57F', borderRadius: 10, padding: '12px 18px', fontSize: 13, color: '#8A6200', display: 'flex', alignItems: 'center', gap: 8 }}>
+        ⚠️ <strong>Note:</strong> Chat messages are permanently deleted upon treatment completion. Treatment plan details, images, and prescriptions are preserved.
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {ARCHIVED.map(t => (
-          <div key={t.id} style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-              <div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#111E18' }}>{t.planName}</h3>
-                <p style={{ fontSize: 13, color: '#707971', marginTop: 2 }}>{t.patientName} · Completed {t.completedAt}</p>
-              </div>
-              <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: '#f3f4f6', color: '#6b7280' }}>COMPLETED</span>
-            </div>
-            <div style={{ display: 'flex', gap: 24, marginBottom: 16 }}>
-              <div><span style={{ fontSize: 11, color: '#707971' }}>Diagnosis</span><p style={{ fontSize: 13, fontWeight: 500, color: '#111E18', marginTop: 2 }}>{t.diagnosis}</p></div>
-              <div><span style={{ fontSize: 11, color: '#707971' }}>Total Phases</span><p style={{ fontSize: 13, fontWeight: 500, color: '#111E18', marginTop: 2 }}>{t.totalPhases}</p></div>
-            </div>
-            {/* Progress bar */}
-            <div style={{ height: 6, background: '#E1F2E8', borderRadius: 999, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: '100%', background: '#1A5C38', borderRadius: 999 }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-              <span style={{ fontSize: 11, color: '#707971' }}>100% Complete</span>
-              <span style={{ fontSize: 11, color: '#BA1A1A' }}>Chat deleted</span>
-            </div>
-            <div style={{ marginTop: 14 }}>
-              <button style={{ background: 'transparent', color: '#1A5C38', border: '1.5px solid #1A5C38', borderRadius: 8, padding: '7px 16px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>View Full Treatment →</button>
-            </div>
-          </div>
-        ))}
+      <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#EDFDF3' }}>
+              {['Plan Name', 'Patient', 'Diagnosis', 'Completed Date', 'Duration', 'Actions'].map(h => (
+                <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#707971', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid #E1F2E8' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colSpan={6} style={{ textAlign: 'center', padding: '60px 20px', color: '#707971' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>📁</div>
+                <p style={{ fontWeight: 500, color: '#404941', marginBottom: 6 }}>No completed treatments yet</p>
+                <p style={{ fontSize: 13 }}>Completed treatment plans will appear here</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );

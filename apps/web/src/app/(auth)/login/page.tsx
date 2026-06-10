@@ -1,5 +1,7 @@
 'use client';
 import { useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -7,20 +9,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPwd, setShowPwd] = useState(false);
   const router = useRouter();
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
     try {
-      // Firebase signInWithEmailAndPassword will be wired here
-      // For now navigate to dashboard as demo
-      await new Promise(r => setTimeout(r, 800));
+      await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
-    } catch {
-      setError('Invalid credentials. Please try again.');
+    } catch (err: any) {
+      setError(err.message?.includes('user-not-found') ? 'No account found with this email.' : err.message?.includes('wrong-password') ? 'Incorrect password. Please try again.' : 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -28,86 +27,76 @@ export default function LoginPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-      {/* Left — Brand panel */}
-      <div style={{ background: 'linear-gradient(160deg, #1A5C38 0%, #004324 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '48px 56px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 40, height: 40, background: '#C9A84C', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: '#1A5C38', fontWeight: 900, fontSize: 18 }}>A</span>
+      {/* Left: Branding */}
+      <div style={{ background: '#1A5C38', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 56px', color: '#fff' }}>
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <div style={{ width: 44, height: 44, background: '#C9A84C', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: '#1A5C38', fontWeight: 800, fontSize: 18 }}>A</span>
+            </div>
+            <div>
+              <p style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, fontWeight: 700 }}>APJ TRUE LIFE</p>
+              <p style={{ fontSize: 12, opacity: 0.7 }}>Ayurvedic Medical Centre</p>
+            </div>
           </div>
-          <span style={{ color: '#fff', fontFamily: '"Playfair Display", serif', fontWeight: 700, fontSize: 18 }}>APJ TRUE LIFE</span>
+          <div style={{ marginTop: 24 }}>
+            <span style={{ background: '#C9A84C', borderRadius: 6, padding: '4px 12px', fontSize: 12, fontWeight: 700 }}>🏆 AYUSH TV National Health Award 2024</span>
+          </div>
         </div>
 
-        <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,168,76,0.2)', border: '1px solid rgba(201,168,76,0.4)', borderRadius: 999, padding: '6px 14px', marginBottom: 24 }}>
-            <span style={{ color: '#C9A84C', fontSize: 14 }}>🏆</span>
-            <span style={{ color: '#C9A84C', fontSize: 12, fontWeight: 600 }}>AYUSH TV National Health Award 2024</span>
-          </div>
-          <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: 36, fontWeight: 700, color: '#fff', lineHeight: 1.3, marginBottom: 20 }}>Your Complete Ayurvedic Clinical Management Platform</h1>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {[
-              { icon: '🔒', title: 'Secure Medical Records', desc: 'DPDP Act 2023 compliant patient data management' },
-              { icon: '📋', title: 'Treatment Plans', desc: 'Multi-phase Ayurvedic treatment lifecycle management' },
-              { icon: '📅', title: 'Schedule Management', desc: 'Calendar, appointments, and real-time patient chat' },
-            ].map(f => (
-              <div key={f.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                <div style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.1)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{f.icon}</div>
+        <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 36, fontWeight: 700, lineHeight: 1.2, marginBottom: 16 }}>Clinical Dashboard for Vaidyas</h1>
+        <p style={{ fontSize: 15, opacity: 0.8, marginBottom: 48, lineHeight: 1.6 }}>Manage your patients, treatment plans, appointments, and communications — all in one place.</p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {[{ icon: '🔒', title: 'Secure Medical Records', desc: 'Encrypted patient data with role-based access control' },
+            { icon: '🌿', title: 'Treatment Plans', desc: 'Multi-phase Ayurvedic treatment plan management' },
+            { icon: '📅', title: 'Schedule Management', desc: 'Full appointment calendar and booking system' }]
+            .map(f => (
+              <div key={f.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                <div style={{ width: 40, height: 40, background: 'rgba(255,255,255,0.12)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{f.icon}</div>
                 <div>
-                  <p style={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>{f.title}</p>
-                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 2 }}>{f.desc}</p>
+                  <p style={{ fontWeight: 700, marginBottom: 2 }}>{f.title}</p>
+                  <p style={{ fontSize: 13, opacity: 0.7 }}>{f.desc}</p>
                 </div>
               </div>
             ))}
-          </div>
         </div>
-
-        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>© 2024 APJ TRUE LIFE Ayurvedic Medical Centre</p>
       </div>
 
-      {/* Right — Login form */}
+      {/* Right: Login form */}
       <div style={{ background: '#EDFDF3', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
-        <div style={{ width: '100%', maxWidth: 400 }}>
-          <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: 28, fontWeight: 700, color: '#004324', marginBottom: 8 }}>Welcome back</h2>
-          <p style={{ fontSize: 14, color: '#707971', marginBottom: 32 }}>Sign in to your clinical dashboard</p>
+        <div style={{ width: '100%', maxWidth: 420 }}>
+          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, fontWeight: 700, color: '#004324', marginBottom: 8 }}>Doctor Login</h2>
+          <p style={{ fontSize: 14, color: '#707971', marginBottom: 32 }}>Sign in to access your clinical dashboard</p>
 
-          {error && (
-            <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 8, padding: '10px 14px', marginBottom: 20, fontSize: 13, color: '#BA1A1A' }}>{error}</div>
-          )}
-
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Email Address</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                placeholder="doctor@apjtruelife.com"
-                style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #C0C9BF', borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none', background: '#fff' }} />
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#404941', marginBottom: 8 }}>Email Address</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="doctor@apjtruelife.com" style={{ width: '100%', border: '1.5px solid #C0C9BF', borderRadius: 10, padding: '12px 14px', fontSize: 15, outline: 'none', background: '#fff', color: '#111E18' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 6 }}>Password</label>
-              <div style={{ position: 'relative' }}>
-                <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
-                  placeholder="••••••••"
-                  style={{ width: '100%', padding: '12px 44px 12px 14px', border: '1.5px solid #C0C9BF', borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none', background: '#fff' }} />
-                <button type="button" onClick={() => setShowPwd(!showPwd)}
-                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#707971', fontSize: 16 }}>
-                  {showPwd ? '🙈' : '👁️'}
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#404941' }}>Password</label>
+                <a href="#" style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>Forgot Password?</a>
               </div>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" style={{ width: '100%', border: '1.5px solid #C0C9BF', borderRadius: 10, padding: '12px 14px', fontSize: 15, outline: 'none', background: '#fff', color: '#111E18' }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#404941' }}>
-                <input type="checkbox" />
-                Remember me for 30 days
-              </label>
-              <a href="#" style={{ fontSize: 13, color: '#1A5C38', fontWeight: 600, textDecoration: 'none' }}>Forgot password?</a>
-            </div>
-            <button type="submit" disabled={loading}
-              style={{ width: '100%', background: loading ? '#2E7D52' : '#1A5C38', color: '#fff', border: 'none', borderRadius: 10, padding: '13px', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', transition: 'background 0.2s' }}>
-              {loading ? 'Signing in...' : 'Sign In'}
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+              <input type="checkbox" style={{ width: 16, height: 16, accentColor: '#1A5C38' }} />
+              <span style={{ fontSize: 13, color: '#404941' }}>Remember me for 30 days</span>
+            </label>
+
+            {error && <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#BA1A1A' }}>{error}</div>}
+
+            <button type="submit" disabled={loading} style={{ background: loading ? '#707971' : '#1A5C38', color: '#fff', border: 'none', borderRadius: 10, padding: '14px', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', marginTop: 4, transition: 'background 0.2s' }}>
+              {loading ? 'Signing in…' : 'Sign In to Dashboard'}
             </button>
           </form>
 
-          <div style={{ marginTop: 24, padding: '14px', background: 'rgba(26,92,56,0.06)', borderRadius: 10, border: '1px solid rgba(26,92,56,0.15)' }}>
-            <p style={{ fontSize: 12, color: '#1A5C38', fontWeight: 600, marginBottom: 4 }}>🔐 Secure Connection</p>
-            <p style={{ fontSize: 11, color: '#707971' }}>This dashboard is exclusively for licensed Ayurvedic practitioners of APJ TRUE LIFE.</p>
+          <div style={{ marginTop: 32, padding: '16px', background: '#fff', borderRadius: 10, border: '1px solid #D4E8D8', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 20 }}>🔒</span>
+            <p style={{ fontSize: 12, color: '#707971' }}>Secure connection. Patient data protected under DPDP Act 2023 & IT Act 2000.</p>
           </div>
         </div>
       </div>
