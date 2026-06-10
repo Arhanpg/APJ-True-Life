@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/app_colors.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -8,109 +8,118 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final _messageController = TextEditingController();
-  final _scrollController = ScrollController();
-  final List<_Message> _messages = [];
+  final TextEditingController _msg = TextEditingController();
+  final ScrollController _scroll = ScrollController();
+  final List<_Message> _messages = [
+    _Message(text: 'Good morning! How are you feeling after yesterday\'s Nasya session?', isDoctor: true, time: '09:15 AM'),
+    _Message(text: 'Good morning Doctor! I feel much better. The nasal heaviness is reduced.', isDoctor: false, time: '09:22 AM'),
+    _Message(text: 'That is a good sign. Please make sure to avoid cold foods and drinks today. Continue the Triphala at night.', isDoctor: true, time: '09:25 AM'),
+    _Message(text: 'Understood, Doctor. Will do. Should I do the oil massage myself?', isDoctor: false, time: '09:30 AM'),
+    _Message(text: 'Yes, gentle Abhyanga on the forehead and neck twice daily. I have uploaded the technique guide in your treatment documents.', isDoctor: true, time: '09:33 AM'),
+  ];
+
+  void _send() {
+    final text = _msg.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _messages.add(_Message(text: text, isDoctor: false, time: 'Now'));
+      _msg.clear();
+    });
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+    });
+  }
 
   @override
-  void dispose() { _messageController.dispose(); _scrollController.dispose(); super.dispose(); }
-
-  void _sendMessage() {
-    final text = _messageController.text.trim();
-    if (text.isEmpty) return;
-    setState(() { _messages.add(_Message(text: text, isPatient: true, time: TimeOfDay.now())); });
-    _messageController.clear();
-    Future.delayed(const Duration(milliseconds: 100), () { if (_scrollController.hasClients) _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 200), curve: Curves.easeOut); });
-  }
+  void dispose() { _msg.dispose(); _scroll.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
-            CircleAvatar(radius: 16, backgroundColor: AppColors.accentGold, child: Text('DR', style: TextStyle(color: AppColors.primaryDark, fontSize: 10, fontWeight: FontWeight.bold))),
-            SizedBox(width: 10),
-            Column(
+            CircleAvatar(radius: 18, backgroundColor: AppColors.primary, child: const Text('AJ', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700))),
+            const SizedBox(width: 10),
+            const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Dr. APJ Sharma', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                Text('Treatment Chat', style: TextStyle(fontSize: 11, color: Color(0xCCFFFFFF))),
+                Text('Dr. APJ Sharma', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.onSurface)),
+                Text('Chief Vaidya · Online', style: TextStyle(fontSize: 11, color: AppColors.primary)),
               ],
             ),
           ],
         ),
-      ),
-      body: Column(
-        children: [
-          // Warning banner
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            color: const Color(0xFFFFF8E1),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(40),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF8E1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFFCA28)),
+            ),
             child: const Row(
               children: [
-                Icon(Icons.warning_amber_rounded, color: Color(0xFFB8860B), size: 16),
-                SizedBox(width: 8),
-                Expanded(child: Text('Chat messages will be deleted when your treatment is completed.', style: TextStyle(fontSize: 12, color: Color(0xFF7A5E00)))),
+                Icon(Icons.info_outline, color: Color(0xFFF57F17), size: 14),
+                SizedBox(width: 6),
+                Expanded(child: Text('Chat messages will be deleted when treatment is completed.', style: TextStyle(fontSize: 11, color: Color(0xFFF57F17)))),
               ],
             ),
           ),
-          // Messages
+        ),
+      ),
+      body: Column(
+        children: [
           Expanded(
-            child: _messages.isEmpty
-                ? const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.chat_bubble_outline, size: 52, color: AppColors.outlineVariant),
-                        SizedBox(height: 12),
-                        Text('No messages yet', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.onSurfaceVariant)),
-                        SizedBox(height: 4),
-                        Text('Send a message to your doctor', style: TextStyle(fontSize: 13, color: AppColors.outline)),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _messages.length,
-                    itemBuilder: (_, i) => _MessageBubble(message: _messages[i]),
-                  ),
+            child: ListView.builder(
+              controller: _scroll,
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              itemCount: _messages.length,
+              itemBuilder: (_, i) => _MessageBubble(msg: _messages[i]),
+            ),
           ),
-          // Input bar
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(color: AppColors.surface, border: Border(top: BorderSide(color: AppColors.outlineVariant))),
-            child: Row(
-              children: [
-                IconButton(icon: const Icon(Icons.attach_file, color: AppColors.outline), onPressed: () {}),
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    maxLines: null,
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _sendMessage(),
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      hintStyle: const TextStyle(color: AppColors.outline),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: AppColors.outlineVariant)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      isDense: true,
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              border: Border(top: BorderSide(color: AppColors.surfaceTint)),
+            ),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.attach_file, color: AppColors.outline),
+                    onPressed: () {},
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _msg,
+                      decoration: InputDecoration(
+                        hintText: 'Type a message...',
+                        hintStyle: const TextStyle(color: AppColors.outline),
+                        filled: true, fillColor: AppColors.background,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      ),
+                      onSubmitted: (_) => _send(),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: _sendMessage,
-                  child: Container(
-                    width: 40, height: 40,
-                    decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                    child: const Icon(Icons.send, color: Colors.white, size: 18),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: _send,
+                    child: Container(
+                      width: 44, height: 44,
+                      decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                      child: const Icon(Icons.send, color: Colors.white, size: 20),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -121,41 +130,58 @@ class _ChatScreenState extends State<ChatScreen> {
 
 class _Message {
   final String text;
-  final bool isPatient;
-  final TimeOfDay time;
-  const _Message({required this.text, required this.isPatient, required this.time});
+  final bool isDoctor;
+  final String time;
+  _Message({required this.text, required this.isDoctor, required this.time});
 }
 
 class _MessageBubble extends StatelessWidget {
-  final _Message message;
-  const _MessageBubble({required this.message});
+  final _Message msg;
+  const _MessageBubble({required this.msg});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
-        mainAxisAlignment: message.isPatient ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: msg.isDoctor ? MainAxisAlignment.start : MainAxisAlignment.end,
         children: [
-          if (!message.isPatient) ...[const CircleAvatar(radius: 14, backgroundColor: AppColors.primary, child: Text('DR', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold))), const SizedBox(width: 8)],
-          Container(
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.68),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: message.isPatient ? AppColors.primary : AppColors.surface,
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(16),
-                topRight: const Radius.circular(16),
-                bottomLeft: Radius.circular(message.isPatient ? 16 : 4),
-                bottomRight: Radius.circular(message.isPatient ? 4 : 16),
-              ),
-              border: message.isPatient ? null : Border.all(color: AppColors.outlineVariant),
+          if (msg.isDoctor)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: CircleAvatar(radius: 16, backgroundColor: AppColors.primary, child: const Text('AJ', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700))),
             ),
+          Flexible(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: msg.isDoctor ? CrossAxisAlignment.start : CrossAxisAlignment.end,
               children: [
-                Text(message.text, style: TextStyle(fontSize: 14, color: message.isPatient ? Colors.white : AppColors.onSurface)),
-                const SizedBox(height: 4),
-                Text('${message.time.hour.toString().padLeft(2, '0')}:${message.time.minute.toString().padLeft(2, '0')}', style: TextStyle(fontSize: 10, color: message.isPatient ? Colors.white60 : AppColors.outline)),
+                Container(
+                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: msg.isDoctor ? AppColors.surface : AppColors.primary,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(16),
+                      topRight: const Radius.circular(16),
+                      bottomLeft: Radius.circular(msg.isDoctor ? 4 : 16),
+                      bottomRight: Radius.circular(msg.isDoctor ? 16 : 4),
+                    ),
+                    border: msg.isDoctor ? Border.all(color: AppColors.outlineVariant) : null,
+                  ),
+                  child: Text(msg.text, style: TextStyle(fontSize: 14, color: msg.isDoctor ? AppColors.onSurface : Colors.white, height: 1.4)),
+                ),
+                const SizedBox(height: 3),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(msg.time, style: const TextStyle(fontSize: 10, color: AppColors.outline)),
+                    if (!msg.isDoctor) ...[
+                      const SizedBox(width: 4),
+                      const Icon(Icons.done_all, size: 14, color: AppColors.primary),
+                    ],
+                  ],
+                ),
               ],
             ),
           ),

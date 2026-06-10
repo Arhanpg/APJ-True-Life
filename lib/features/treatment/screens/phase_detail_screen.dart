@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/section_card.dart';
+import '../../../core/widgets/status_chip.dart';
 
 class PhaseDetailScreen extends StatelessWidget {
   final String phaseId;
@@ -7,165 +9,216 @@ class PhaseDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 4,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text('Phase $phaseId Details', style: const TextStyle(fontFamily: 'PlayfairDisplay', fontWeight: FontWeight.bold)),
-          bottom: const TabBar(
-            labelColor: Colors.white,
-            unselectedLabelColor: Color(0xAAFFFFFF),
-            indicatorColor: AppColors.accentGold,
-            tabs: [
-              Tab(text: 'Overview'),
-              Tab(text: 'Medicines'),
-              Tab(text: 'Diet'),
-              Tab(text: 'Docs'),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            _OverviewTab(phaseId: phaseId),
-            _MedicinesTab(),
-            _DietTab(),
-            _DocsTab(),
-          ],
+    final isPhase2 = phaseId == '2';
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Phase $phaseId Details'),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.surfaceTint),
         ),
       ),
-    );
-  }
-}
-
-class _OverviewTab extends StatelessWidget {
-  final String phaseId;
-  const _OverviewTab({required this.phaseId});
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(20)), child: const Text('IN PROGRESS', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12))),
-        const SizedBox(height: 16),
-        Text('Phase $phaseId: Purvakarma', style: const TextStyle(fontSize: 20, fontFamily: 'PlayfairDisplay', fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
-        const SizedBox(height: 8),
-        const Text('Preparatory procedures before the main Panchakarma therapy. Includes internal and external oleation.', style: TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant, height: 1.6)),
-        const SizedBox(height: 24),
-        const Text('What Will Be Done', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
-        const SizedBox(height: 12),
-        ...[1, 2, 3].map((i) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(width: 24, height: 24, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle), child: Center(child: Text('$i', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)))),
-              const SizedBox(width: 12),
-              const Expanded(child: Text('Abhyanga (full body oil massage) with medicated oil for 45 minutes.', style: TextStyle(fontSize: 14, color: AppColors.onSurface, height: 1.5))),
-            ],
-          ),
-        )),
-      ],
-    );
-  }
-}
-
-class _MedicinesTab extends StatelessWidget {
-  final _meds = const [
-    {'name': 'Anu Thailam', 'dosage': '2 drops', 'frequency': 'Morning', 'timing': 'Before food', 'route': 'Nasal'},
-    {'name': 'Kanchanara Guggulu', 'dosage': '2 tablets', 'frequency': 'Twice daily', 'timing': 'After food', 'route': 'Oral'},
-    {'name': 'Triphala Churna', 'dosage': '5g', 'frequency': 'Bedtime', 'timing': 'With warm water', 'route': 'Oral'},
-  ];
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: _meds.map((m) => Container(
-        margin: const EdgeInsets.only(bottom: 12),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.outlineVariant)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(m['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.onSurface)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8, runSpacing: 6,
-              children: [
-                _pill('💊 ${m['dosage']}'),
-                _pill('🕐 ${m['frequency']}'),
-                _pill('🍽 ${m['timing']}'),
-                _pill('📍 ${m['route']}'),
-              ],
+            // Phase header
+            SectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 44, height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(child: Text('P$phaseId', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14))),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(isPhase2 ? 'Nasya Therapy' : phaseId == '1' ? 'Purvakarma' : 'Paschatkarma',
+                              style: const TextStyle(fontFamily: 'PlayfairDisplay', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primaryDark)),
+                            const SizedBox(height: 4),
+                            Text(isPhase2 ? 'Day 7 of 14' : phaseId == '1' ? 'Completed · 7 days' : 'Scheduled',
+                              style: const TextStyle(fontSize: 13, color: AppColors.outline)),
+                          ],
+                        ),
+                      ),
+                      StatusChip(status: isPhase2 ? ChipStatus.inProgress : phaseId == '1' ? ChipStatus.completed : ChipStatus.scheduled),
+                    ],
+                  ),
+                  if (isPhase2) ...[
+                    const SizedBox(height: 14),
+                    const Text('Phase Goal', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.outline, letterSpacing: 0.5)),
+                    const SizedBox(height: 4),
+                    const Text('Clear nasal pathways, improve absorption of medicated oils, balance Vata and Kapha doshas.',
+                      style: TextStyle(fontSize: 14, color: AppColors.onSurface, height: 1.5)),
+                  ],
+                ],
+              ),
             ),
+            const SizedBox(height: 16),
+
+            // Warning banner
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFFCA28), width: 1),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Color(0xFFF57F17), size: 18),
+                  SizedBox(width: 10),
+                  Expanded(child: Text('Chat messages will be deleted when treatment is completed.',
+                    style: TextStyle(fontSize: 12, color: Color(0xFFF57F17)))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Procedures
+            SectionCard(
+              title: 'What Will Be Done',
+              child: Column(
+                children: const [
+                  _ProcedureItem(number: 1, text: 'Prepare Anu Thailam (medicated sesame oil) at body temperature.'),
+                  _ProcedureItem(number: 2, text: 'Patient lies down with neck slightly extended.'),
+                  _ProcedureItem(number: 3, text: 'Administer 2 drops of oil in each nostril.'),
+                  _ProcedureItem(number: 4, text: 'Gentle nasal massage for 5 minutes post-administration.'),
+                  _ProcedureItem(number: 5, text: 'Rest for 15 minutes in supine position.'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Medicines
+            SectionCard(
+              title: 'Prescribed Medicines',
+              child: Column(
+                children: const [
+                  _MedicineItem(name: 'Anu Thailam', dosage: '2 drops', frequency: 'Morning', timing: 'Empty stomach'),
+                  Divider(color: AppColors.surfaceTint),
+                  _MedicineItem(name: 'Kanchanara Guggulu', dosage: '2 tablets', frequency: 'Twice daily', timing: 'After food'),
+                  Divider(color: AppColors.surfaceTint),
+                  _MedicineItem(name: 'Triphala Churna', dosage: '5g', frequency: 'Once at night', timing: 'With warm water'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Diet guidelines
+            SectionCard(
+              title: 'Diet Guidelines',
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: const [
+                          Icon(Icons.check_circle, color: AppColors.primary, size: 16),
+                          SizedBox(width: 6),
+                          Text('Consume', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                        ]),
+                        const SizedBox(height: 10),
+                        ...[' Warm water', ' Ginger tea', ' Steamed vegetables', ' Light khichdi'].map((e) =>
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text(e, style: const TextStyle(fontSize: 13, color: AppColors.onSurface)),
+                          )),
+                      ],
+                    ),
+                  ),
+                  const VerticalDivider(color: AppColors.surfaceTint),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: const [
+                          Icon(Icons.cancel, color: AppColors.error, size: 16),
+                          SizedBox(width: 6),
+                          Text('Avoid', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.error)),
+                        ]),
+                        const SizedBox(height: 10),
+                        ...[' Cold foods', ' Dairy', ' Spicy food', ' Late nights'].map((e) =>
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text(e, style: const TextStyle(fontSize: 13, color: AppColors.onSurface)),
+                          )),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
           ],
         ),
-      )).toList(),
+      ),
     );
   }
-  Widget _pill(String text) => Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: AppColors.surfaceTint, borderRadius: BorderRadius.circular(20)), child: Text(text, style: const TextStyle(fontSize: 12, color: AppColors.primaryDark)));
 }
 
-class _DietTab extends StatelessWidget {
+class _ProcedureItem extends StatelessWidget {
+  final int number;
+  final String text;
+  const _ProcedureItem({required this.number, required this.text});
   @override
   Widget build(BuildContext context) {
-    const consume = ['Warm water', 'Ginger tea', 'Rice gruel', 'Steamed vegetables', 'Ghee (clarified butter)'];
-    const avoid = ['Cold drinks', 'Dairy products', 'Heavy fried foods', 'Raw vegetables', 'Alcohol'];
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        _dietSection('To Consume', consume, true),
-        const SizedBox(height: 20),
-        _dietSection('To Avoid', avoid, false),
-      ],
-    );
-  }
-
-  Widget _dietSection(String title, List<String> items, bool consume) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: consume ? AppColors.primary.withOpacity(0.05) : AppColors.error.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: consume ? AppColors.primary.withOpacity(0.2) : AppColors.error.withOpacity(0.2)),
-      ),
-      child: Column(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: consume ? AppColors.primary : AppColors.error)),
-          const SizedBox(height: 12),
-          ...items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                Text(consume ? '✓' : '✗', style: TextStyle(color: consume ? AppColors.primary : AppColors.error, fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(width: 10),
-                Text(item, style: const TextStyle(fontSize: 14, color: AppColors.onSurface)),
-              ],
-            ),
-          )),
+          Container(
+            width: 24, height: 24,
+            decoration: const BoxDecoration(color: AppColors.surfaceTint, shape: BoxShape.circle),
+            child: Center(child: Text('$number', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary))),
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 14, color: AppColors.onSurface, height: 1.4))),
         ],
       ),
     );
   }
 }
 
-class _DocsTab extends StatelessWidget {
+class _MedicineItem extends StatelessWidget {
+  final String name, dosage, frequency, timing;
+  const _MedicineItem({required this.name, required this.dosage, required this.frequency, required this.timing});
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.folder_outlined, size: 56, color: AppColors.outlineVariant),
-            SizedBox(height: 16),
-            Text('No documents yet', style: TextStyle(fontSize: 16, color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w500)),
-            SizedBox(height: 8),
-            Text('Your doctor will upload prescriptions and diet charts here.', style: TextStyle(fontSize: 13, color: AppColors.outline), textAlign: TextAlign.center),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: AppColors.surfaceTint, borderRadius: BorderRadius.circular(8)),
+            child: const Icon(Icons.medication, color: AppColors.primary, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.onSurface)),
+              Text('$dosage · $frequency · $timing', style: const TextStyle(fontSize: 12, color: AppColors.outline)),
+            ],
+          )),
+        ],
       ),
     );
   }
