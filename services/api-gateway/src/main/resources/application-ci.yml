@@ -1,0 +1,5 @@
+# CI profile — API Gateway has no DB but needs a profile for consistency
+spring:
+  cloud:
+    gateway:
+      routes: []
