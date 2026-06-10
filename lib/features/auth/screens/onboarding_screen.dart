@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme.dart';
+
+const _pages = [
+  _OnboardingPage(emoji: '🌿', title: 'Certified Experts', subtitle: 'AYUSH TV National Health Award 2024 winners. Trusted Ayurvedic care.'),
+  _OnboardingPage(emoji: '💊', title: 'Natural Remedies', subtitle: 'Personalised Ayurvedic treatment plans tailored to your Prakriti and health needs.'),
+  _OnboardingPage(emoji: '🧘', title: 'Holistic Care', subtitle: 'Panchakarma, Nasya, Abhyanga and more — complete Ayurvedic healing in one app.'),
+];
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -9,26 +15,11 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
+  final _controller = PageController();
+  int _current = 0;
 
-  final List<_OnboardingData> _pages = [
-    _OnboardingData(
-      icon: Icons.verified_user_outlined,
-      title: 'Certified Experts',
-      subtitle: 'Consult with award-winning Ayurvedic doctors recognised by AYUSH TV for clinical excellence.',
-    ),
-    _OnboardingData(
-      icon: Icons.eco_outlined,
-      title: 'Natural Remedies',
-      subtitle: 'Personalised herbal treatments, Panchakarma therapy, and Nasya procedures tailored to your Prakriti.',
-    ),
-    _OnboardingData(
-      icon: Icons.self_improvement_outlined,
-      title: 'Holistic Care',
-      subtitle: 'Track your complete treatment journey — phases, medicines, diet plans — all in one place.',
-    ),
-  ];
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +37,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             Expanded(
               child: PageView.builder(
-                controller: _pageController,
+                controller: _controller,
                 itemCount: _pages.length,
-                onPageChanged: (i) => setState(() => _currentPage = i),
-                itemBuilder: (_, i) => _OnboardingPage(data: _pages[i]),
+                onPageChanged: (i) => setState(() => _current = i),
+                itemBuilder: (_, i) => _pages[i],
               ),
             ),
             Row(
@@ -57,10 +48,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               children: List.generate(_pages.length, (i) => AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: _currentPage == i ? 24 : 8,
+                width: _current == i ? 24 : 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: _currentPage == i ? AppColors.primary : AppColors.outlineVariant,
+                  color: _current == i ? AppColors.primary : AppColors.outlineVariant,
                   borderRadius: BorderRadius.circular(4),
                 ),
               )),
@@ -69,16 +60,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton(
-                onPressed: () {
-                  if (_currentPage < _pages.length - 1) {
-                    _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                  } else {
-                    context.go('/phone');
-                  }
-                },
-                child: Text(_currentPage == _pages.length - 1
-                    ? 'GET STARTED WITH MOBILE OTP'
-                    : 'Next'),
+                onPressed: () => context.go('/phone'),
+                child: const Text('GET STARTED WITH MOBILE OTP'),
               ),
             ),
             const SizedBox(height: 32),
@@ -89,17 +72,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-class _OnboardingData {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  _OnboardingData({required this.icon, required this.title, required this.subtitle});
-}
-
 class _OnboardingPage extends StatelessWidget {
-  final _OnboardingData data;
-  const _OnboardingPage({required this.data});
-
+  final String emoji, title, subtitle;
+  const _OnboardingPage({required this.emoji, required this.title, required this.subtitle});
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -109,26 +84,13 @@ class _OnboardingPage extends StatelessWidget {
         children: [
           Container(
             width: 120, height: 120,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceTint,
-              borderRadius: BorderRadius.circular(32),
-            ),
-            child: Icon(data.icon, size: 64, color: AppColors.primary),
+            decoration: BoxDecoration(color: AppColors.surfaceTint, shape: BoxShape.circle),
+            child: Center(child: Text(emoji, style: const TextStyle(fontSize: 52))),
           ),
           const SizedBox(height: 40),
-          Text(data.title,
-            style: const TextStyle(
-              fontFamily: 'PlayfairDisplay',
-              fontSize: 28, fontWeight: FontWeight.w700,
-              color: AppColors.primaryDark,
-            ),
-            textAlign: TextAlign.center,
-          ),
+          Text(title, style: const TextStyle(fontSize: 26, fontFamily: 'PlayfairDisplay', fontWeight: FontWeight.bold, color: AppColors.primaryDark), textAlign: TextAlign.center),
           const SizedBox(height: 16),
-          Text(data.subtitle,
-            style: const TextStyle(fontSize: 16, color: AppColors.onSurfaceVariant, height: 1.6),
-            textAlign: TextAlign.center,
-          ),
+          Text(subtitle, style: const TextStyle(fontSize: 15, color: AppColors.onSurfaceVariant, height: 1.6), textAlign: TextAlign.center),
         ],
       ),
     );

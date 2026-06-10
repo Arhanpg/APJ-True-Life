@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,7 +15,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
     _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
     Future.delayed(const Duration(seconds: 2), () {
@@ -24,10 +24,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  void dispose() { _controller.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
@@ -37,35 +34,24 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         child: FadeTransition(
           opacity: _fadeAnim,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 100, height: 100,
+                width: 96, height: 96,
                 decoration: BoxDecoration(
-                  color: AppColors.onPrimary.withOpacity(0.15),
+                  color: AppColors.accentGold,
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Icon(Icons.local_florist, size: 56, color: AppColors.onPrimary),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'APJ TRUE LIFE',
-                style: TextStyle(
-                  fontFamily: 'PlayfairDisplay',
-                  fontSize: 28, fontWeight: FontWeight.w700,
-                  color: AppColors.onPrimary, letterSpacing: 1.5,
+                child: const Center(
+                  child: Text('A', style: TextStyle(color: AppColors.primary, fontSize: 48, fontFamily: 'PlayfairDisplay', fontWeight: FontWeight.bold)),
                 ),
               ),
+              const SizedBox(height: 24),
+              const Text('APJ TRUE LIFE', style: TextStyle(color: AppColors.onPrimary, fontSize: 28, fontFamily: 'PlayfairDisplay', fontWeight: FontWeight.bold, letterSpacing: 1.2)),
               const SizedBox(height: 8),
-              const Text(
-                'Ayurvedic Medical Centre',
-                style: TextStyle(fontSize: 14, color: Color(0xCCFFFFFF), letterSpacing: 0.5),
-              ),
+              const Text('Ayurvedic Medical Centre', style: TextStyle(color: Color(0xCCFFFFFF), fontSize: 14, letterSpacing: 0.5)),
               const SizedBox(height: 48),
-              const CircularProgressIndicator(
-                color: AppColors.accentGold,
-                strokeWidth: 2,
-              ),
+              const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: AppColors.accentGold, strokeWidth: 2)),
             ],
           ),
         ),
