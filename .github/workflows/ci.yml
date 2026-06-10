@@ -1,14 +1,42 @@
+# ============================================================
+# APJ TRUE LIFE — CI/CD Pipeline
+# ============================================================
+# Checks triggered on every push / PR to main (web + backend)
+# and every push / PR to master (Flutter mobile app).
+#
+# Jobs on main branch:
+#   - next-lint       : ESLint on Next.js code
+#   - next-typecheck  : TypeScript strict type check (tsc --noEmit)
+#   - next-build      : Production build (catches missing imports etc.)
+#   - auth-service    : Gradle build (Java 21)
+#   - patient-service : Gradle build (Java 21)
+#   - doctor-service  : Gradle build (Java 21)
+#   - treatment-service    : Gradle build (Java 21)
+#   - appointment-service  : Gradle build (Java 21)
+#   - chat-service         : Gradle build (Java 21)
+#   - notification-service : Gradle build (Java 21)
+#   - api-gateway          : Gradle build (Java 21)
+#
+# Jobs on master branch:
+#   - flutter-analyze : dart analyze (static analysis)
+#   - flutter-test    : flutter test (unit tests)
+# ============================================================
+
 name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
+# ─────────────────────────────────────────
+# NEXT.JS JOBS  (main branch — apps/web)
+# ─────────────────────────────────────────
 jobs:
-  web:
-    name: Next.js Build
+  next-lint:
+    name: "Next.js / ESLint"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -18,21 +46,70 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: apps/web/package-lock.json
-      - run: npm ci
-      - run: npm run build
+      - name: Install dependencies
+        run: npm install
+      - name: Run ESLint
+        run: npm run lint
+
+  next-typecheck:
+    name: "Next.js / TypeScript"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+        # Allow failure while the frontend scaffold still has placeholder types.
+        # Remove `continue-on-error` once all types are properly defined.
+        continue-on-error: true
+
+  next-build:
+    name: "Next.js / Production Build"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build Next.js
+        run: npm run build
         env:
+          # Placeholder values — real secrets live in Vercel env vars at deploy time.
           NEXT_PUBLIC_FIREBASE_API_KEY: placeholder
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: placeholder
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: placeholder.firebaseapp.com
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: placeholder
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: placeholder
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: placeholder
-          NEXT_PUBLIC_FIREBASE_APP_ID: placeholder
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: placeholder.appspot.com
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '000000000000'
+          NEXT_PUBLIC_FIREBASE_APP_ID: 1:000000000000:web:placeholder
           NEXT_PUBLIC_API_BASE_URL: http://localhost:8080/api/v1
 
+# ─────────────────────────────────────────────────────────────────
+# SPRING BOOT JOBS  (main branch — services/*)
+#
+# WHY gradle wrapper task?
+# The services are scaffolded without a committed gradlew binary.
+# We install Gradle 8.8 via the official setup-gradle action, then
+# run `gradle wrapper` inside each service to generate the wrapper
+# script on-the-fly, then use `./gradlew build -x test` as normal.
+# This lets CI compile the code without needing the binary in Git.
+# ─────────────────────────────────────────────────────────────────
   auth-service:
-    name: Auth Service Build
+    name: "Auth Service / Build"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -43,11 +120,17 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - run: chmod +x gradlew || true
-      - run: ./gradlew build -x test
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'
+      - name: Generate Gradle wrapper
+        run: gradle wrapper
+      - name: Build (skip tests)
+        run: ./gradlew build -x test
 
   patient-service:
-    name: Patient Service Build
+    name: "Patient Service / Build"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -58,11 +141,38 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - run: chmod +x gradlew || true
-      - run: ./gradlew build -x test
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'
+      - name: Generate Gradle wrapper
+        run: gradle wrapper
+      - name: Build (skip tests)
+        run: ./gradlew build -x test
+
+  doctor-service:
+    name: "Doctor Service / Build"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/doctor-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'
+      - name: Generate Gradle wrapper
+        run: gradle wrapper
+      - name: Build (skip tests)
+        run: ./gradlew build -x test
 
   treatment-service:
-    name: Treatment Service Build
+    name: "Treatment Service / Build"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -73,5 +183,139 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - run: chmod +x gradlew || true
-      - run: ./gradlew build -x test
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'
+      - name: Generate Gradle wrapper
+        run: gradle wrapper
+      - name: Build (skip tests)
+        run: ./gradlew build -x test
+
+  appointment-service:
+    name: "Appointment Service / Build"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/appointment-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'
+      - name: Generate Gradle wrapper
+        run: gradle wrapper
+      - name: Build (skip tests)
+        run: ./gradlew build -x test
+
+  chat-service:
+    name: "Chat Service / Build"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/chat-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'
+      - name: Generate Gradle wrapper
+        run: gradle wrapper
+      - name: Build (skip tests)
+        run: ./gradlew build -x test
+
+  notification-service:
+    name: "Notification Service / Build"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/notification-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'
+      - name: Generate Gradle wrapper
+        run: gradle wrapper
+      - name: Build (skip tests)
+        run: ./gradlew build -x test
+
+  api-gateway:
+    name: "API Gateway / Build"
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api-gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'
+      - name: Generate Gradle wrapper
+        run: gradle wrapper
+      - name: Build (skip tests)
+        run: ./gradlew build -x test
+
+# ─────────────────────────────────────────────────────────────────
+# FLUTTER JOBS  (master branch — apps/mobile)
+#
+# WHY master branch?
+# The Flutter app lives on the master branch (separate from the
+# backend/web code on main). These jobs only trigger on master.
+# ─────────────────────────────────────────────────────────────────
+  flutter-analyze:
+    name: "Flutter / Dart Analyze"
+    if: github.ref == 'refs/heads/master' || github.base_ref == 'master'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+      - name: Get Flutter packages
+        run: flutter pub get
+      - name: Dart static analysis
+        run: flutter analyze
+        # Allow warnings during scaffold phase — remove once code is clean.
+        continue-on-error: true
+
+  flutter-test:
+    name: "Flutter / Unit Tests"
+    if: github.ref == 'refs/heads/master' || github.base_ref == 'master'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+      - name: Get Flutter packages
+        run: flutter pub get
+      - name: Run unit tests
+        run: flutter test
