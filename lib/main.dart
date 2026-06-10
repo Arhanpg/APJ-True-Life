@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: APJTrueLifeApp()));
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+  ));
+  runApp(const APJTrueLifeApp());
 }
 
-class APJTrueLifeApp extends ConsumerWidget {
+class APJTrueLifeApp extends StatelessWidget {
   const APJTrueLifeApp({super.key});
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(routerProvider);
+  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'APJ TRUE LIFE',
-      theme: AppTheme.lightTheme,
-      routerConfig: router,
       debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      routerConfig: AppRouter.router,
     );
   }
 }
