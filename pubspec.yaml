@@ -1,5 +1,5 @@
 name: apj_true_life
-description: APJ TRUE LIFE — Ayurvedic Medical Centre Patient App
+description: APJ TRUE LIFE — Ayurvedic Digital Health Platform
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -9,34 +9,27 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  # State management
+  # State Management
   flutter_riverpod: ^2.5.1
   riverpod: ^2.5.1
-
   # Navigation
   go_router: ^13.2.0
-
   # Firebase
-  firebase_core: ^3.1.0
-  firebase_auth: ^5.1.0
-  firebase_messaging: ^15.0.1
-
-  # HTTP client
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.20.0
+  firebase_messaging: ^14.9.4
+  # HTTP
   dio: ^5.4.3
-
   # Storage
   flutter_secure_storage: ^9.0.0
   shared_preferences: ^2.2.3
-
-  # Images
+  # Image
   cached_network_image: ^3.3.1
-  image_picker: ^1.1.0
-
-  # WebSocket (Chat)
+  image_picker: ^1.1.2
+  # WebSocket
   web_socket_channel: ^3.0.0
-
   # UI
+  google_fonts: ^6.2.1
   flutter_svg: ^2.0.10
   intl: ^0.19.0
 
@@ -45,22 +38,10 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^3.0.0
   mockito: ^5.4.4
+  build_runner: ^2.4.9
 
 flutter:
   uses-material-design: true
-  fonts:
-    - family: PlayfairDisplay
-      fonts:
-        - asset: assets/fonts/PlayfairDisplay-Regular.ttf
-        - asset: assets/fonts/PlayfairDisplay-Bold.ttf
-          weight: 700
-    - family: DMSans
-      fonts:
-        - asset: assets/fonts/DMSans-Regular.ttf
-        - asset: assets/fonts/DMSans-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/DMSans-SemiBold.ttf
-          weight: 600
   assets:
     - assets/images/
     - assets/icons/

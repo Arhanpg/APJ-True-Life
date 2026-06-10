@@ -1,26 +1,21 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SecureStorage {
-  SecureStorage._();
+final secureStorageProvider = Provider<SecureStorageService>(
+  (_) => SecureStorageService(),
+);
 
-  static const _storage = FlutterSecureStorage(
+class SecureStorageService {
+  final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
-    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
   );
 
-  static const _keyJwt       = 'apj_jwt';
-  static const _keyUserId    = 'apj_user_id';
-  static const _keyUserRole  = 'apj_user_role';
+  Future<void> writeToken(String token) =>
+      _storage.write(key: 'jwt_token', value: token);
 
-  static Future<void> saveJwt(String token)   => _storage.write(key: _keyJwt, value: token);
-  static Future<String?> getJwt()             => _storage.read(key: _keyJwt);
-  static Future<void> deleteJwt()             => _storage.delete(key: _keyJwt);
+  Future<String?> readToken() => _storage.read(key: 'jwt_token');
 
-  static Future<void> saveUserId(String id)   => _storage.write(key: _keyUserId, value: id);
-  static Future<String?> getUserId()          => _storage.read(key: _keyUserId);
+  Future<void> deleteToken() => _storage.delete(key: 'jwt_token');
 
-  static Future<void> saveUserRole(String r)  => _storage.write(key: _keyUserRole, value: r);
-  static Future<String?> getUserRole()        => _storage.read(key: _keyUserRole);
-
-  static Future<void> clearAll()              => _storage.deleteAll();
+  Future<void> clear() => _storage.deleteAll();
 }
