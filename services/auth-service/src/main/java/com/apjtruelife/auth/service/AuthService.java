@@ -1,93 +1,119 @@
 package com.apjtruelife.auth.service;
 
+import com.apjtruelife.auth.dto.AuthResponse;
+import com.apjtruelife.auth.dto.RegisterRequest;
+import com.apjtruelife.auth.dto.UserDto;
 import com.apjtruelife.auth.model.User;
 import com.apjtruelife.auth.repository.UserRepository;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
-    private final UserRepository userRepo;
-    private final String jwtSecret;
-    private final long jwtExpirationMs;
+    private final UserRepository userRepository;
+    private final FirebaseTokenService firebaseTokenService;
+    private final JwtService jwtService;
 
-    public AuthService(
-        UserRepository userRepo,
-        @Value("${app.jwt.secret}") String jwtSecret,
-        @Value("${app.jwt.expiration-ms}") long jwtExpirationMs
-    ) {
-        this.userRepo = userRepo;
-        this.jwtSecret = jwtSecret;
-        this.jwtExpirationMs = jwtExpirationMs;
-    }
+    /**
+     * Verifies a Firebase ID token and returns a custom JWT.
+     * If the user does not exist, creates a new PATIENT record.
+     */
+    @Transactional
+    public AuthResponse verifyAndLogin(String idToken) {
+        FirebaseToken firebaseToken = firebaseTokenService.verifyToken(idToken);
+        String firebaseUid = firebaseToken.getUid();
 
-    public Map<String, Object> verifyAndIssue(String firebaseToken) {
-        try {
-            FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(firebaseToken);
-            String uid = decoded.getUid();
-            String phone = (String) decoded.getClaims().get("phone_number");
-            String email = decoded.getEmail();
+        Optional<User> existingUser = userRepository.findByFirebaseUid(firebaseUid);
+        boolean isNewUser = existingUser.isEmpty();
 
-            User user = userRepo.findByFirebaseUid(uid).orElseGet(() -> {
-                User u = new User();
-                u.setFirebaseUid(uid);
-                u.setPhoneNumber(phone);
-                u.setEmail(email);
-                // phone-based = PATIENT, email-based = DOCTOR
-                u.setRole(phone != null ? User.UserRole.PATIENT : User.UserRole.DOCTOR);
-                return userRepo.save(u);
-            });
-
-            user.setLastLoginAt(Instant.now());
-            userRepo.save(user);
-
-            String jwt = buildJwt(user);
-            Map<String, Object> result = new HashMap<>();
-            result.put("token", jwt);
-            result.put("userId", user.getId());
-            result.put("role", user.getRole());
-            result.put("isNewUser", !userRepo.existsByFirebaseUid(uid));
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid Firebase token: " + e.getMessage());
+        User user;
+        if (isNewUser) {
+            // Auto-create PATIENT for first-time OTP login
+            String phoneNumber = firebaseTokenService.getPhoneNumber(firebaseToken);
+            user = User.builder()
+                    .firebaseUid(firebaseUid)
+                    .role(User.UserRole.PATIENT)
+                    .phoneNumber(phoneNumber)
+                    .email((String) firebaseToken.getClaims().get("email"))
+                    .isActive(true)
+                    .build();
+            user = userRepository.save(user);
+            log.info("New PATIENT user created for Firebase UID: {}", firebaseUid);
+        } else {
+            user = existingUser.get();
+            if (!user.getIsActive()) {
+                throw new IllegalStateException("User account is deactivated");
+            }
         }
+
+        // Update last login
+        userRepository.updateLastLogin(user.getId(), OffsetDateTime.now());
+
+        String jwt = jwtService.generateToken(user);
+        log.info("JWT issued for user {} with role {}", user.getId(), user.getRole());
+
+        return AuthResponse.builder()
+                .success(true)
+                .jwt(jwt)
+                .userId(user.getId())
+                .firebaseUid(user.getFirebaseUid())
+                .role(user.getRole())
+                .isNewUser(isNewUser)
+                .message(isNewUser ? "New user created" : "Login successful")
+                .build();
     }
 
-    public Map<String, Object> getCurrentUser(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        var claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-        String uid = claims.getSubject();
-        User user = userRepo.findById(java.util.UUID.fromString(uid))
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", user.getId());
-        result.put("role", user.getRole());
-        result.put("email", user.getEmail());
-        result.put("phoneNumber", user.getPhoneNumber());
-        return result;
+    /**
+     * Registers a DOCTOR user (called when doctor is added via Firebase Console).
+     */
+    @Transactional
+    public AuthResponse registerDoctor(RegisterRequest request) {
+        if (userRepository.existsByFirebaseUid(request.getFirebaseUid())) {
+            throw new IllegalArgumentException("User with this Firebase UID already exists");
+        }
+
+        User user = User.builder()
+                .firebaseUid(request.getFirebaseUid())
+                .role(User.UserRole.DOCTOR)
+                .email(request.getEmail())
+                .isActive(true)
+                .build();
+        user = userRepository.save(user);
+        log.info("DOCTOR user registered: {}", user.getId());
+
+        String jwt = jwtService.generateToken(user);
+        return AuthResponse.builder()
+                .success(true)
+                .jwt(jwt)
+                .userId(user.getId())
+                .firebaseUid(user.getFirebaseUid())
+                .role(user.getRole())
+                .isNewUser(true)
+                .message("Doctor registered successfully")
+                .build();
     }
 
-    private String buildJwt(User user) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        return Jwts.builder()
-            .subject(user.getId().toString())
-            .claim("role", user.getRole().name())
-            .claim("firebaseUid", user.getFirebaseUid())
-            .issuedAt(new Date())
-            .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-            .signWith(key)
-            .compact();
+    @Transactional(readOnly = true)
+    public UserDto getUserById(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        return UserDto.fromUser(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserDto getUserByFirebaseUid(String firebaseUid) {
+        User user = userRepository.findByFirebaseUid(firebaseUid)
+                .orElseThrow(() -> new IllegalArgumentException("User not found for Firebase UID: " + firebaseUid));
+        return UserDto.fromUser(user);
     }
 }

@@ -1,25 +1,41 @@
 package com.apjtruelife.auth.dto;
 
-import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
+import lombok.Data;
 
+import java.time.OffsetDateTime;
+
+@Data
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     private boolean success;
     private T data;
     private String message;
-    private Instant timestamp = Instant.now();
+    private ErrorDetails error;
+    @Builder.Default
+    private OffsetDateTime timestamp = OffsetDateTime.now();
 
-    public static <T> ApiResponse<T> ok(T data) {
-        ApiResponse<T> r = new ApiResponse<>();
-        r.success = true; r.data = data; r.message = "OK";
-        return r;
+    public static <T> ApiResponse<T> ok(T data, String message) {
+        return ApiResponse.<T>builder()
+                .success(true)
+                .data(data)
+                .message(message)
+                .build();
     }
-    public static <T> ApiResponse<T> error(String message) {
-        ApiResponse<T> r = new ApiResponse<>();
-        r.success = false; r.message = message;
-        return r;
+
+    public static <T> ApiResponse<T> error(String code, String message) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .error(ErrorDetails.builder().code(code).message(message).build())
+                .build();
     }
-    public boolean isSuccess() { return success; }
-    public T getData() { return data; }
-    public String getMessage() { return message; }
-    public Instant getTimestamp() { return timestamp; }
+
+    @Data
+    @Builder
+    public static class ErrorDetails {
+        private String code;
+        private String message;
+    }
 }
