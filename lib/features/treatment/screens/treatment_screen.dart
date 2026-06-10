@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 
 class TreatmentScreen extends StatelessWidget {
@@ -8,31 +9,49 @@ class TreatmentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text('My Treatment', style: Theme.of(context).textTheme.headlineLarge),
-        backgroundColor: AppColors.background,
-        automaticallyImplyLeading: false,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.assignment_outlined, size: 64, color: AppColors.primary.withOpacity(0.4)),
-              const SizedBox(height: 20),
-              Text('No active treatment plan',
-                style: Theme.of(context).textTheme.headlineLarge,
-                textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              Text(
-                'Once your doctor creates a treatment plan for you, it will appear here with all phases, medicines, and diet guidelines.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
-                textAlign: TextAlign.center,
-              ),
-            ],
+      appBar: AppBar(title: const Text('My Treatment'), centerTitle: true),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // Empty state
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.outlineVariant),
+            ),
+            child: Column(
+              children: [
+                const Text('🌿', style: TextStyle(fontSize: 56)),
+                const SizedBox(height: 16),
+                const Text('No Active Treatment', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppColors.primaryDark)),
+                const SizedBox(height: 8),
+                const Text('Your doctor will assign a treatment plan after consultation.', style: TextStyle(color: AppColors.onSurfaceVariant, height: 1.5), textAlign: TextAlign.center),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(minimumSize: const Size(0, 44)),
+                  onPressed: () => context.go('/appointments'),
+                  child: const Text('Book a Consultation'),
+                ),
+              ],
+            ),
           ),
-        ),
+          const SizedBox(height: 24),
+          const Text('Completed Treatments', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.primaryDark)),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.outlineVariant),
+            ),
+            child: const Center(
+              child: Text('No completed treatments yet', style: TextStyle(color: AppColors.outline)),
+            ),
+          ),
+        ],
       ),
     );
   }

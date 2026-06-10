@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 
@@ -8,7 +7,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -17,51 +15,103 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
+              // Greeting
               Row(
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Hello, Patient 👋', style: Theme.of(context).textTheme.headlineLarge),
-                        const SizedBox(height: 4),
-                        Text('Welcome back to APJ TRUE LIFE',
-                          style: Theme.of(context).textTheme.bodyMedium),
+                        const Text('Hello,', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 14)),
+                        const Text('Patient 👋', style: TextStyle(color: AppColors.primaryDark, fontSize: 22, fontWeight: FontWeight.w700)),
                       ],
                     ),
                   ),
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: AppColors.primary,
-                    child: Text((user?.phoneNumber ?? 'P').substring(0, 1).toUpperCase(),
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentGold.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.accentGold),
+                    ),
+                    child: const Row(
+                      children: [
+                        Text('🏆', style: TextStyle(fontSize: 12)),
+                        SizedBox(width: 4),
+                        Text('AYUSH TV 2024', style: TextStyle(color: AppColors.accentGold, fontSize: 10, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
+
+              // Active Treatment Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.secondary],
+                    begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Active Treatment', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    const Text('No active treatment', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accentGold,
+                        foregroundColor: AppColors.primaryDark,
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () => context.go('/appointments'),
+                      child: const Text('Book Appointment', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 20),
 
-              // Award banner
+              // Primary Physician
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.gold.withOpacity(0.15),
-                  border: Border.all(color: AppColors.gold.withOpacity(0.4)),
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.outlineVariant),
                 ),
                 child: Row(
                   children: [
-                    const Text('🏆', style: TextStyle(fontSize: 24)),
-                    const SizedBox(width: 12),
-                    Expanded(
+                    Container(
+                      width: 56, height: 56,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      child: const Center(child: Text('DR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('AYUSH TV National Health Award 2024',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
-                              color: AppColors.primaryDark)),
-                          Text('Recognised for Clinical Excellence',
-                            style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          Row(
+                            children: [
+                              Text('Primary Physician', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12)),
+                              SizedBox(width: 6),
+                              Icon(Icons.verified, color: AppColors.accentGold, size: 14),
+                            ],
+                          ),
+                          Text('Dr. APJ Sharma', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.primaryDark)),
+                          Text('Chief Vaidya', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13)),
                         ],
                       ),
                     ),
@@ -70,94 +120,22 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Active Treatment Card
-              _SectionHeader(title: 'My Treatment', action: 'View all', onAction: () => context.go('/treatment')),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  border: Border.all(color: AppColors.outlineVariant),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('No active treatment plan',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-                    const SizedBox(height: 6),
-                    Text('Your doctor will assign a treatment plan after your first appointment.',
-                      style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5)),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 44,
-                      child: ElevatedButton(
-                        onPressed: () => context.go('/appointments'),
-                        child: const Text('Book Appointment'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Primary Physician
-              _SectionHeader(title: 'Primary Physician', action: '', onAction: () {}),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  border: Border.all(color: AppColors.outlineVariant),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: AppColors.primary,
-                      child: const Text('DR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Dr. APJ Sharma', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 2),
-                        Text('Chief Vaidya · APJ TRUE LIFE',
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text('✓ Verified', style: TextStyle(fontSize: 11,
-                            color: AppColors.primary, fontWeight: FontWeight.w500)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Quick actions
-              _SectionHeader(title: 'Services', action: '', onAction: () {}),
+              // Quick Actions
+              const Text('Services', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.primaryDark)),
               const SizedBox(height: 12),
               GridView.count(
-                crossAxisCount: 2,
+                crossAxisCount: 4,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                childAspectRatio: 2.4,
                 children: [
-                  _ServiceTile(label: 'General', icon: Icons.medical_services_outlined),
-                  _ServiceTile(label: 'OBG', icon: Icons.favorite_outline),
-                  _ServiceTile(label: 'Psychiatry', icon: Icons.psychology_outlined),
-                  _ServiceTile(label: 'Dietetics', icon: Icons.restaurant_outlined),
+                  _ServiceTile(icon: '🏥', label: 'General'),
+                  _ServiceTile(icon: '🤱', label: 'OBG'),
+                  _ServiceTile(icon: '🧠', label: 'Psychiatry'),
+                  _ServiceTile(icon: '🥗', label: 'Dietetics'),
+                  _ServiceTile(icon: '💆', label: 'Abhyanga'),
+                  _ServiceTile(icon: '🧘', label: 'Yoga'),
                 ],
               ),
             ],
@@ -168,44 +146,24 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final String action;
-  final VoidCallback onAction;
-  const _SectionHeader({required this.title, required this.action, required this.onAction});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-        if (action.isNotEmpty)
-          TextButton(onPressed: onAction, child: Text(action, style: const TextStyle(color: AppColors.primary))),
-      ],
-    );
-  }
-}
-
 class _ServiceTile extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  const _ServiceTile({required this.label, required this.icon});
+  final String icon, label;
+  const _ServiceTile({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        border: Border.all(color: AppColors.outlineVariant),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.outlineVariant),
       ),
-      child: Row(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: AppColors.primary, size: 20),
-          const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+          Text(icon, style: const TextStyle(fontSize: 24)),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant), textAlign: TextAlign.center),
         ],
       ),
     );
