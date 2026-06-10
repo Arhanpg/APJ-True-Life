@@ -5,10 +5,13 @@ spring:
   application:
     name: patient-service
   datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/apjtruelife_patients}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
   jpa:
     hibernate:
       ddl-auto: validate
@@ -17,16 +20,19 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
-    schemas: patients
     locations: classpath:db/migration
     baseline-on-migrate: true
-
-app:
-  jwt:
-    secret: ${JWT_SECRET}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:apj-true-life-super-secret-key-change-in-production-must-be-256-bits}
+
+logging:
+  level:
+    com.apjtruelife: INFO
