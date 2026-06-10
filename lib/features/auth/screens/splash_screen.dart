@@ -1,39 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_colors.dart';
 
-class SplashScreen extends ConsumerStatefulWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-
   @override
-  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen>
-    with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
+  late Animation<double> _fadeAnim;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
-    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
-    _navigate();
-  }
-
-  Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      context.go('/home');
-    } else {
-      context.go('/onboarding');
-    }
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) context.go('/onboarding');
+    });
   }
 
   @override
@@ -48,35 +35,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       backgroundColor: AppColors.primary,
       body: Center(
         child: FadeTransition(
-          opacity: _fadeAnimation,
+          opacity: _fadeAnim,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 100,
-                height: 100,
+                width: 100, height: 100,
                 decoration: BoxDecoration(
-                  color: AppColors.accentGold,
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.onPrimary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Center(
-                  child: Text('APJ', style: TextStyle(color: AppColors.primary, fontSize: 28, fontWeight: FontWeight.bold)),
-                ),
+                child: const Icon(Icons.local_florist, size: 56, color: AppColors.onPrimary),
               ),
               const SizedBox(height: 24),
               const Text(
                 'APJ TRUE LIFE',
-                style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: 1.5),
+                style: TextStyle(
+                  fontFamily: 'PlayfairDisplay',
+                  fontSize: 28, fontWeight: FontWeight.w700,
+                  color: AppColors.onPrimary, letterSpacing: 1.5,
+                ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 'Ayurvedic Medical Centre',
-                style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 14),
+                style: TextStyle(fontSize: 14, color: Color(0xCCFFFFFF), letterSpacing: 0.5),
               ),
               const SizedBox(height: 48),
-              const SizedBox(
-                width: 32, height: 32,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+              const CircularProgressIndicator(
+                color: AppColors.accentGold,
+                strokeWidth: 2,
               ),
             ],
           ),

@@ -1,108 +1,105 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 
 class PhoneEntryScreen extends StatefulWidget {
   const PhoneEntryScreen({super.key});
-
   @override
   State<PhoneEntryScreen> createState() => _PhoneEntryScreenState();
 }
 
 class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
   final _phoneController = TextEditingController();
-  bool _loading = false;
+  bool _isLoading = false;
   String? _error;
 
-  String get _fullPhone => '+91\${_phoneController.text.trim()}';
+  bool get _isValid => _phoneController.text.length == 10;
 
-  bool get _isValid => _phoneController.text.trim().length == 10;
-
-  Future<void> _sendOtp() async {
+  void _sendOtp() async {
     if (!_isValid) return;
-    setState(() { _loading = true; _error = null; });
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: _fullPhone,
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: (credential) async {
-        await FirebaseAuth.instance.signInWithCredential(credential);
-        if (mounted) context.go('/home');
-      },
-      verificationFailed: (e) {
-        setState(() { _loading = false; _error = e.message; });
-      },
-      codeSent: (verificationId, _) {
-        setState(() => _loading = false);
-        context.go('/otp', extra: verificationId);
-      },
-      codeAutoRetrievalTimeout: (_) {},
-    );
-  }
-
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    super.dispose();
+    setState(() { _isLoading = true; _error = null; });
+    // Firebase Phone Auth would go here
+    await Future.delayed(const Duration(seconds: 1));
+    if (mounted) {
+      setState(() => _isLoading = false);
+      context.go('/otp', extra: '+91${_phoneController.text}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(backgroundColor: AppColors.background, elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/onboarding')),
-      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 24),
-              Text('Enter your mobile number', style: Theme.of(context).textTheme.displayMedium),
-              const SizedBox(height: 8),
-              Text('We will send a 6-digit OTP to verify your number.',
-                style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 40),
+              Container(
+                width: 56, height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceTint,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(Icons.local_florist, color: AppColors.primary, size: 32),
+              ),
+              const SizedBox(height: 32),
+              const Text('Sign In',
+                style: TextStyle(
+                  fontFamily: 'PlayfairDisplay',
+                  fontSize: 32, fontWeight: FontWeight.w700,
+                  color: AppColors.primaryDark,
+                )),
+              const SizedBox(height: 8),
+              const Text('Enter your mobile number to receive a one-time password.',
+                style: TextStyle(fontSize: 15, color: AppColors.onSurfaceVariant, height: 1.5)),
+              const SizedBox(height: 40),
+              const Text('Mobile Number', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.onSurface)),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.outlineVariant),
-                      borderRadius: BorderRadius.circular(12),
                       color: AppColors.surfaceTint,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.outlineVariant, width: 1.5),
                     ),
-                    child: const Text('+91', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    child: const Text('+91', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColors.onSurface)),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                       maxLength: 10,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       onChanged: (_) => setState(() {}),
                       decoration: const InputDecoration(
-                        hintText: '10-digit mobile number',
+                        hintText: '9876543210',
                         counterText: '',
                       ),
                     ),
                   ),
                 ],
               ),
-              if (_error != null) ...[
-                const SizedBox(height: 12),
-                Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13)),
-              ],
+              if (_error != null) ...[const SizedBox(height: 8), Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13))],
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: _isValid && !_loading ? _sendOtp : null,
-                child: _loading
-                    ? const SizedBox(height: 20, width: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                onPressed: _isValid && !_isLoading ? _sendOtp : null,
+                child: _isLoading
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     : const Text('Send OTP'),
               ),
+              const Spacer(),
+              Center(
+                child: Text('AYUSH TV National Health Award 2024',
+                  style: TextStyle(fontSize: 12, color: AppColors.accentGold, fontWeight: FontWeight.w500)),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
