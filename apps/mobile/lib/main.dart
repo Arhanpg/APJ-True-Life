@@ -1,37 +1,27 @@
-import 'package:apj_true_life/core/app.dart';
-import 'package:apj_true_life/core/di/providers.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:firebase_core/firebase_core.dart';
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(const ProviderScope(child: APJTrueLifeApp()));
+}
 
-  // Lock orientation to portrait
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+class APJTrueLifeApp extends ConsumerWidget {
+  const APJTrueLifeApp({super.key});
 
-  // Set system UI overlay style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
-
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  runApp(
-    const ProviderScope(
-      child: APJTrueLifeApp(),
-    ),
-  );
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+    return MaterialApp.router(
+      title: 'APJ TRUE LIFE',
+      theme: AppTheme.lightTheme,
+      routerConfig: router,
+      debugShowCheckedModeBanner: false,
+    );
+  }
 }
