@@ -1,30 +1,45 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-class AppTheme {
-  static ThemeData get lightTheme => ThemeData(
+ThemeData buildAppTheme() {
+  return ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
+    colorScheme: const ColorScheme(
+      brightness: Brightness.light,
       primary: AppColors.primary,
+      onPrimary: AppColors.onPrimary,
       secondary: AppColors.secondary,
-      background: AppColors.background,
-      surface: AppColors.surface,
+      onSecondary: AppColors.onPrimary,
       error: AppColors.error,
+      onError: AppColors.onPrimary,
+      surface: AppColors.surface,
+      onSurface: AppColors.onSurface,
     ),
     scaffoldBackgroundColor: AppColors.background,
+    fontFamily: 'DMSans',
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
+      foregroundColor: AppColors.onPrimary,
       elevation: 0,
+      centerTitle: false,
+      titleTextStyle: TextStyle(
+        fontFamily: 'PlayfairDisplay',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: AppColors.onPrimary,
+      ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.onPrimary,
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(
+          fontFamily: 'DMSans',
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -33,36 +48,42 @@ class AppTheme {
         side: const BorderSide(color: AppColors.primary, width: 1.5),
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white,
+      fillColor: AppColors.surface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.outlineVariant, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.outlineVariant),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.outlineVariant, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
-      labelStyle: const TextStyle(color: AppColors.textMuted),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      labelStyle: const TextStyle(color: AppColors.outline, fontFamily: 'DMSans', fontWeight: FontWeight.w500, fontSize: 14),
+    ),
+    cardTheme: CardTheme(
+      color: AppColors.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: Color(0xFFD4E8D8)),
+      ),
+      margin: EdgeInsets.zero,
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.textMuted,
+      unselectedItemColor: AppColors.outline,
       type: BottomNavigationBarType.fixed,
-      elevation: 8,
-      selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-      unselectedLabelStyle: TextStyle(fontSize: 11),
+      selectedLabelStyle: TextStyle(fontFamily: 'DMSans', fontSize: 11, fontWeight: FontWeight.w600),
+      unselectedLabelStyle: TextStyle(fontFamily: 'DMSans', fontSize: 11),
     ),
-    fontFamily: 'DMSans',
   );
 }
