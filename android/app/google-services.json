@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "873445934123",
+    "project_id": "apj-true-life-909fa",
+    "storage_bucket": "apj-true-life-909fa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873445934123:android:e78113414b1b20064b966e",
+        "android_client_info": {
+          "package_name": "com.apjtruelife.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAghzvEs9Pj43X5p72U4Ab8nz2NPfA8M1E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873445934123:android:050f5505e6306b494b966e",
+        "android_client_info": {
+          "package_name": "com.example.apj_true_life"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAghzvEs9Pj43X5p72U4Ab8nz2NPfA8M1E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

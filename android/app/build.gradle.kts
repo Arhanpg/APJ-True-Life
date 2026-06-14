@@ -1,13 +1,16 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("dev.flutter.flutter-gradle-plugin")
+    // START: FlutterFire Configuration
     id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
+    id("kotlin-android")
+    id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.apjtruelife.mobile"
-    compileSdk = 35
+    namespace = "com.example.apj_true_life"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -19,17 +22,15 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.apjtruelife.mobile"
-        minSdk = 21
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
-        multiDexEnabled = true
+        applicationId = "com.example.apj_true_life"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -37,10 +38,4 @@ android {
 
 flutter {
     source = "../.."
-}
-
-dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
 }
