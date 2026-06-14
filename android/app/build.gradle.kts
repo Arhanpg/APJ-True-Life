@@ -2,11 +2,12 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.apj_true_life"
-    compileSdk = 34
+    namespace = "com.apjtruelife.mobile"
+    compileSdk = 35
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -18,15 +19,17 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.apj_true_life"
+        applicationId = "com.apjtruelife.mobile"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+        multiDexEnabled = true
     }
 
     buildTypes {
         release {
+            isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -37,5 +40,7 @@ flutter {
 }
 
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-analytics")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
 }
