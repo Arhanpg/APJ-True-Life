@@ -1,11 +1,6 @@
 # ============================================================
 # APJ TRUE LIFE — Flutter CI (master branch)
-# Covers: Flutter mobile patient app (apps/mobile)
-#
-# WHY this file is on MASTER (not main):
-#   GitHub Actions reads workflow .yml files from the branch
-#   that was pushed to. The Flutter app lives on master.
-#   So this file MUST exist on master to trigger on master pushes.
+# Flutter app lives at ROOT of master branch (not apps/mobile)
 # ============================================================
 name: CI — Flutter Mobile
 
@@ -20,33 +15,27 @@ jobs:
   flutter-analyze:
     name: "Flutter / Dart Analyze"
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.22.2'
           channel: 'stable'
           cache: true
       - name: Get packages
         run: flutter pub get
       - name: Dart static analysis
         run: flutter analyze
-        continue-on-error: true  # Warnings allowed during active development
+        continue-on-error: true
 
   flutter-test:
     name: "Flutter / Unit Tests"
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.22.2'
           channel: 'stable'
           cache: true
       - name: Get packages
@@ -57,9 +46,6 @@ jobs:
   flutter-build-android:
     name: "Flutter / Build Android APK"
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -68,13 +54,13 @@ jobs:
           distribution: 'temurin'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.22.2'
           channel: 'stable'
           cache: true
       - name: Get packages
         run: flutter pub get
       - name: Build debug APK
-        # continue-on-error: will fail until firebase_options.dart is configured.
-        # Remove this once Firebase project is set up and flutterfire configure is run.
+        # Will succeed once google-services.json is added (gitignored).
+        # CI builds without Firebase — Firebase is runtime only.
         run: flutter build apk --debug
         continue-on-error: true
