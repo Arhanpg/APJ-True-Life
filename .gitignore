@@ -5,11 +5,9 @@
 *.swp
 .DS_Store
 .atom/
-.build/
 .buildlog/
 .history
 .svn/
-.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -19,19 +17,20 @@ migrate_working_dir/
 .idea/
 
 # The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code which you may wish to be included in version control, so this is
+# not listed by default. Uncomment the following line if you do not want to
+# include these in version control:
+# .vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
-/coverage/
+build/
 
 # Symbolication related
 app.*.symbols
@@ -43,3 +42,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment secrets — NEVER commit real .env
+.env
+# DO commit .env.example so other devs know what vars are needed
+!.env.example
+
+# Firebase — google-services contains public API keys so it IS safe to commit
+# but if you rotate keys, regenerate from Firebase console

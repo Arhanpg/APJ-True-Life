@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// Uncomment the line above AND add google-services.json to android/app/
-// before enabling Firebase initialization below.
+import 'package:firebase_core/firebase_core.dart';
 
+import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Lock to portrait mode
   await SystemChrome.setPreferredOrientations([
@@ -24,9 +28,6 @@ void main() async {
       statusBarIconBrightness: Brightness.dark,
     ),
   );
-
-  // TODO: Uncomment after placing google-services.json in android/app/
-  // await Firebase.initializeApp();
 
   runApp(const ProviderScope(child: APJTrueLifeApp()));
 }

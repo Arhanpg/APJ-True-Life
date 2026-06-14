@@ -1,14 +1,13 @@
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
+    // FlutterFire Configuration
     id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.apj_true_life"
+    namespace = "com.apjtruelife.mobile"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,8 +21,9 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.apj_true_life"
-        minSdk = flutter.minSdkVersion
+        // Must match the package_name in google-services.json (com.apjtruelife.mobile)
+        applicationId = "com.apjtruelife.mobile"
+        minSdk = 23  // Firebase Phone Auth requires minSdk 23+
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
