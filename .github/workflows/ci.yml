@@ -1,9 +1,4 @@
-# ============================================================
-# APJ TRUE LIFE — CI Pipeline (main branch)
-# Covers: Next.js web dashboard + all 8 Spring Boot services
-# Flutter mobile app is handled in flutter-ci.yml (master branch)
-# ============================================================
-name: CI — Backend & Web
+name: CI
 
 on:
   push:
@@ -12,218 +7,119 @@ on:
     branches: [main]
 
 jobs:
-
-  # ─────────────────────────────────────────
-  # NEXT.JS (apps/web)
-  # ─────────────────────────────────────────
-  next-lint:
-    name: "Next.js / ESLint"
+  # ──────────────────────────────────────────────────────────
+  # Backend: Build + Test (all Spring Boot services)
+  # Uses a local Postgres 16 container — NO cloud credentials.
+  # ──────────────────────────────────────────────────────────
+  backend:
+    name: Backend — Build & Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install
-      - run: npm run lint
-        continue-on-error: true  # ESLint warnings in scaffold — non-blocking
 
-  next-typecheck:
-    name: "Next.js / TypeScript"
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install
-      - run: npx tsc --noEmit
-        continue-on-error: true  # Remove once all types are finalised
-
-  next-build:
-    name: "Next.js / Production Build"
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install
-      - name: Build
-        run: npm run build
+    services:
+      postgres:
+        image: postgres:16-alpine
         env:
-          NEXT_PUBLIC_FIREBASE_API_KEY: placeholder
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: placeholder.firebaseapp.com
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: placeholder
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: placeholder.appspot.com
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '000000000000'
-          NEXT_PUBLIC_FIREBASE_APP_ID: 1:000000000000:web:placeholder
-          NEXT_PUBLIC_API_BASE_URL: http://localhost:8080/api/v1
+          POSTGRES_USER: apjdev
+          POSTGRES_PASSWORD: apjdev
+          POSTGRES_DB: apjtruelife
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-  # ─────────────────────────────────────────────────────────────────
-  # SPRING BOOT SERVICES
-  #
-  # HOW CI BUILD WORKS (no real DB needed):
-  #   1. setup-gradle installs Gradle 8.8 on the runner
-  #   2. `gradle wrapper` generates the gradlew script locally
-  #   3. `./gradlew build -x test` compiles the code only
-  #   4. The `-Dspring.profiles.active=ci` flag activates
-  #      application-ci.yml in each service, which uses H2
-  #      in-memory DB + disables Flyway so no real DB is needed.
-  #   Spring Boot only tries to connect to a DB at *runtime*,
-  #   not during `./gradlew build -x test` compile phase — so
-  #   this is actually safe WITHOUT application-ci.yml too,
-  #   but we include it as belt-and-suspenders.
-  # ─────────────────────────────────────────────────────────────────
-  auth-service:
-    name: "Auth Service / Build"
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/auth-service
+    env:
+      # CI uses local Postgres — session-mode string for Flyway
+      DATABASE_URL_SESSION: jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev
+      # CI uses local Postgres — transaction-mode string for runtime (same local DB in CI)
+      DATABASE_URL_RUNTIME: jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev&prepareThreshold=0
+      # Stub values for CI — real secrets never touch CI
+      JWT_PRIVATE_KEY: CI_STUB_PRIVATE_KEY
+      JWT_PUBLIC_KEY: CI_STUB_PUBLIC_KEY
+      OTP_HASH_PEPPER: ci-test-pepper-not-real
+      SMS_GATEWAY_PROVIDER: mock
+      SMS_GATEWAY_API_KEY: mock
+      SMS_GATEWAY_SENDER_ID: APJTRL
+      SMS_GATEWAY_TEMPLATE_ID: mock
+      INTERNAL_GATEWAY_SECRET: ci-internal-secret
+      SPRING_PROFILES_ACTIVE: local
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.8'
-      - run: gradle wrapper --no-daemon
-      - run: ./gradlew build -x test --no-daemon
+          cache: gradle
 
-  patient-service:
-    name: "Patient Service / Build"
+      - name: Build & Test all services
+        working-directory: services
+        run: ./gradlew build test --parallel --continue
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: services/**/build/reports/tests/
+
+  # ──────────────────────────────────────────────────────────
+  # Frontend Web: Next.js lint + type-check + test
+  # ──────────────────────────────────────────────────────────
+  web:
+    name: Web Dashboard — Lint & Test
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: services/patient-service
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.8'
-      - run: gradle wrapper --no-daemon
-      - run: ./gradlew build -x test --no-daemon
+        working-directory: apps/web
 
-  doctor-service:
-    name: "Doctor Service / Build"
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/doctor-service
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.8'
-      - run: gradle wrapper --no-daemon
-      - run: ./gradlew build -x test --no-daemon
 
-  treatment-service:
-    name: "Treatment Service / Build"
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/treatment-service
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.8'
-      - run: gradle wrapper --no-daemon
-      - run: ./gradlew build -x test --no-daemon
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
 
-  appointment-service:
-    name: "Appointment Service / Build"
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/appointment-service
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.8'
-      - run: gradle wrapper --no-daemon
-      - run: ./gradlew build -x test --no-daemon
+      - name: Install dependencies
+        run: npm ci
 
-  chat-service:
-    name: "Chat Service / Build"
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/chat-service
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.8'
-      - run: gradle wrapper --no-daemon
-      - run: ./gradlew build -x test --no-daemon
+      - name: Lint
+        run: npm run lint
 
-  notification-service:
-    name: "Notification Service / Build"
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/notification-service
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.8'
-      - run: gradle wrapper --no-daemon
-      - run: ./gradlew build -x test --no-daemon
+      - name: Type-check
+        run: npm run type-check
 
-  api-gateway:
-    name: "API Gateway / Build"
+      - name: Test
+        run: npm test -- --passWithNoTests
+
+  # ──────────────────────────────────────────────────────────
+  # Mobile: Flutter analyze
+  # ──────────────────────────────────────────────────────────
+  mobile:
+    name: Flutter App — Analyze
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/api-gateway
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          java-version: '21'
-          distribution: 'temurin'
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.8'
-      - run: gradle wrapper --no-daemon
-      - run: ./gradlew build -x test --no-daemon
+          flutter-version: '3.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Flutter pub get
+        working-directory: apps/mobile
+        run: flutter pub get
+
+      - name: Flutter analyze
+        working-directory: apps/mobile
+        run: flutter analyze

@@ -1,23 +1,62 @@
-server:
-  port: 8088
+# APJ TRUE LIFE — media-service
+# Rebuilt: mints short-lived signed upload/download URLs against Supabase Storage.
+# Uses Supabase service-role key (server-side only — NEVER shipped to any client).
+# Cloudinary SDK has been removed. All file access goes through this service.
 
 spring:
   application:
     name: media-service
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+  flyway:
+    enabled: false  # media-service has no own DB tables — it's a pure proxy to Supabase Storage
+  jpa:
+    hibernate:
+      ddl-auto: none
 
-app:
-  cloudinary:
-    cloud-name: ${CLOUDINARY_CLOUD_NAME}
-    api-key:    ${CLOUDINARY_API_KEY}
-    api-secret: ${CLOUDINARY_API_SECRET}
-    folder:     apj-true-life
+server:
+  port: 8088
+
+supabase:
+  url: ${SUPABASE_URL}
+  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}  # SERVER-SIDE ONLY — never ship to Flutter or Next.js
+  storage:
+    buckets:
+      profile-photos: profile-photos
+      phase-documents: phase-documents
+      chat-media: chat-media
+      clinic-assets: clinic-assets
+    signed-url-upload-ttl-seconds: 300   # 5 minutes
+    signed-url-download-ttl-seconds: 900  # 15 minutes
+
+gateway:
+  internal-secret: ${INTERNAL_GATEWAY_SECRET}
+
+# Downstream service URLs for ownership validation checks
+patient-service:
+  base-url: ${PATIENT_SERVICE_BASE_URL:http://localhost:8082}
+treatment-service:
+  base-url: ${TREATMENT_SERVICE_BASE_URL:http://localhost:8084}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+supabase:
+  url: ${SUPABASE_URL:https://your-project-ref.supabase.co}
+  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY:LOCAL_STUB_SERVICE_ROLE_KEY}
+
+gateway:
+  internal-secret: local-dev-internal-secret
+
+---
+spring:
+  config:
+    activate:
+      on-profile: railway

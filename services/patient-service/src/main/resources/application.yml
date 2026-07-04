@@ -1,27 +1,24 @@
-server:
-  port: 8082
+# APJ TRUE LIFE — patient-service
+# ADR-011/012: SESSION string for Flyway, RUNTIME string with prepareThreshold=0 for HikariCP.
 
 spring:
   application:
     name: patient-service
-  datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/apjtruelife_patients}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:password}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
     locations: classpath:db/migration
+    url: ${DATABASE_URL_SESSION}
     baseline-on-migrate: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+server:
+  port: 8082
+
+gateway:
+  internal-secret: ${INTERNAL_GATEWAY_SECRET}
 
 management:
   endpoints:
@@ -29,10 +26,28 @@ management:
       exposure:
         include: health,info
 
-app:
-  jwt:
-    secret: ${JWT_SECRET:apj-true-life-super-secret-key-change-in-production-must-be-256-bits}
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev&prepareThreshold=0
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    url: jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev
 
-logging:
-  level:
-    com.apjtruelife: INFO
+gateway:
+  internal-secret: local-dev-internal-secret
+
+---
+spring:
+  config:
+    activate:
+      on-profile: railway
+  datasource:
+    # ADR-012: prepareThreshold=0 disables server-side prepared statements for Supavisor transaction-mode pooling
+    url: ${DATABASE_URL_RUNTIME}?prepareThreshold=0
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    url: ${DATABASE_URL_SESSION}

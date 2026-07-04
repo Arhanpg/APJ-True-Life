@@ -1,0 +1,42 @@
+version: '3.9'
+
+# APJ TRUE LIFE — Local Development Stack
+# Usage: docker compose -f docker-compose.dev.yml up -d
+# Postgres 16 mirrors Supabase's engine version for local-dev parity.
+# Adminer available at http://localhost:8081 (System: PostgreSQL, Server: postgres, User: apjdev, Password: apjdev, Database: apjtruelife)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: apjtl-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: apjdev
+      POSTGRES_PASSWORD: apjdev
+      POSTGRES_DB: apjtruelife
+    ports:
+      - "5432:5432"
+    volumes:
+      - apjtl_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apjdev -d apjtruelife"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: apjtl-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: dracula
+
+volumes:
+  apjtl_postgres_data:
+    name: apjtl_postgres_data

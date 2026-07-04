@@ -1,0 +1,82 @@
+# ============================================================
+# APJ TRUE LIFE — .gitignore
+# ============================================================
+
+# --- Environment / Secrets (NEVER commit real values) ---
+.env
+.env.local
+.env.production
+.env.*.local
+*.env
+
+# --- Java / Spring Boot ---
+target/
+build/
+*.class
+*.jar
+*.war
+*.ear
+!gradle-wrapper.jar
+.gradle/
+gradle/
+!gradle/wrapper/
+out/
+.idea/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+HSQLDB.properties
+
+# --- Flutter / Dart ---
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+android/local.properties
+android/.gradle
+android/captures/
+android/gradlew
+android/gradlew.bat
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Runner.xcworkspace/
+
+# --- Node.js / Next.js ---
+node_modules/
+.next/
+.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+coverage/
+dist/
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Keys (belt-and-suspenders — should never get this far) ---
+*.pem
+*.key
+*.p12
+*.jks
+keystore.properties
+google-services.json
+GoogleService-Info.plist
+firebase-service-account*.json

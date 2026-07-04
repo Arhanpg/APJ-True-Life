@@ -1,5 +1,6 @@
-server:
-  port: 8080
+# APJ TRUE LIFE — api-gateway
+# Single entry point: JWT validation, rate limiting, CORS, routing.
+# JWT filter validates RS256 tokens via auth-service's JWKS endpoint (local cache, no network call per request).
 
 spring:
   application:
@@ -9,55 +10,114 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins:
-              - "https://apjtruelife.com"
-              - "http://localhost:3000"
-            allowedMethods: "*"
-            allowedHeaders: "*"
-            allowCredentials: true
-      routes:
-        - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
-          predicates:
-            - Path=/api/v1/auth/**
-        - id: patient-service
-          uri: ${PATIENT_SERVICE_URL:http://localhost:8082}
-          predicates:
-            - Path=/api/v1/patients/**
-        - id: doctor-service
-          uri: ${DOCTOR_SERVICE_URL:http://localhost:8083}
-          predicates:
-            - Path=/api/v1/doctors/**,/api/v1/clinics/**
-        - id: treatment-service
-          uri: ${TREATMENT_SERVICE_URL:http://localhost:8084}
-          predicates:
-            - Path=/api/v1/treatments/**,/api/v1/phases/**
-        - id: appointment-service
-          uri: ${APPOINTMENT_SERVICE_URL:http://localhost:8085}
-          predicates:
-            - Path=/api/v1/appointments/**
-        - id: chat-service
-          uri: ${CHAT_SERVICE_URL:http://localhost:8086}
-          predicates:
-            - Path=/api/v1/chat/**,/ws/**
-        - id: notification-service
-          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8087}
-          predicates:
-            - Path=/api/v1/notifications/**
-        - id: media-service
-          uri: ${MEDIA_SERVICE_URL:http://localhost:8088}
-          predicates:
-            - Path=/api/v1/media/**
+            allowed-origins: ${ALLOWED_CORS_ORIGIN:http://localhost:3000}
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
+
+server:
+  port: 8080
+
+auth:
+  jwks-url: ${AUTH_SERVICE_JWKS_URL:http://localhost:8081/api/v1/auth/.well-known/jwks.json}
+
+gateway:
+  internal-secret: ${INTERNAL_GATEWAY_SECRET}
+
+rate-limit:
+  unauth-per-min: ${RATE_LIMIT_UNAUTH_PER_MIN:100}
+  auth-per-min: ${RATE_LIMIT_AUTH_PER_MIN:500}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
-  endpoint:
-    health:
-      show-details: always
+        include: health,info
 
-logging:
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/auth/**
+        - id: patient-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/v1/patients/**
+        - id: doctor-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/doctors/**
+        - id: treatment-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/v1/treatments/**
+        - id: appointment-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/v1/appointments/**
+        - id: chat-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/v1/chat/**,/ws/**
+        - id: notification-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/v1/notifications/**
+        - id: media-service
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/v1/media/**
+
+auth:
+  jwks-url: http://localhost:8081/api/v1/auth/.well-known/jwks.json
+
+gateway:
+  internal-secret: local-dev-internal-secret
+
+---
+spring:
+  config:
+    activate:
+      on-profile: railway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_BASE_URL}
+          predicates:
+            - Path=/api/v1/auth/**
+        - id: patient-service
+          uri: ${PATIENT_SERVICE_BASE_URL}
+          predicates:
+            - Path=/api/v1/patients/**
+        - id: doctor-service
+          uri: ${DOCTOR_SERVICE_BASE_URL}
+          predicates:
+            - Path=/api/v1/doctors/**
+        - id: treatment-service
+          uri: ${TREATMENT_SERVICE_BASE_URL}
+          predicates:
+            - Path=/api/v1/treatments/**
+        - id: appointment-service
+          uri: ${APPOINTMENT_SERVICE_BASE_URL}
+          predicates:
+            - Path=/api/v1/appointments/**
+        - id: chat-service
+          uri: ${CHAT_SERVICE_BASE_URL}
+          predicates:
+            - Path=/api/v1/chat/**,/ws/**
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_BASE_URL}
+          predicates:
+            - Path=/api/v1/notifications/**
+        - id: media-service
+          uri: ${MEDIA_SERVICE_BASE_URL}
+          predicates:
+            - Path=/api/v1/media/**

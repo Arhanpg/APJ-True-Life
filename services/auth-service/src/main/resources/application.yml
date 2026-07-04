@@ -1,49 +1,96 @@
-server:
-  port: 8081
+# APJ TRUE LIFE — auth-service
+# ADR-011: SESSION string (port 5432) for Flyway; RUNTIME string (port 6543, prepareThreshold=0) for HikariCP.
+# ADR-012: prepareThreshold=0 disables server-side prepared statements — required for Supavisor transaction-mode pooling.
 
 spring:
   application:
     name: auth-service
-  datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/apjtruelife_auth}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:password}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-      connection-timeout: 30000
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: false
-    show-sql: false
+
   flyway:
     enabled: true
     locations: classpath:db/migration
+    # In all profiles, Flyway uses the SESSION-mode connection string.
+    url: ${DATABASE_URL_SESSION}
+    user: ""
+    password: ""
+    # Supabase session-mode includes credentials in the URL; set user/password blank.
     baseline-on-migrate: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+server:
+  port: 8081
+
+jwt:
+  private-key: ${JWT_PRIVATE_KEY}
+  public-key: ${JWT_PUBLIC_KEY}
+  access-token-expiry-minutes: 15
+  refresh-token-expiry-days: 30
+
+otp:
+  expiry-minutes: 5
+  max-attempts: 5
+  max-requests-per-phone-per-15min: 3
+  max-requests-per-phone-per-24h: 10
+  max-requests-per-ip-per-15min: 10
+  hash-pepper: ${OTP_HASH_PEPPER}
+
+sms:
+  provider: ${SMS_GATEWAY_PROVIDER:mock}
+  api-key: ${SMS_GATEWAY_API_KEY:mock}
+  sender-id: ${SMS_GATEWAY_SENDER_ID:APJTRL}
+  template-id: ${SMS_GATEWAY_TEMPLATE_ID:mock}
+  # DLT-registered template — must match character-for-character with registered template.
+  # DO NOT modify this string without also updating the DLT-registered template.
+  otp-template: "Your APJ TRUE LIFE verification code is {otp}. Valid for 5 minutes. Do not share this code with anyone."
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info
   endpoint:
     health:
-      show-details: when_authorized
+      show-details: when-authorized
 
-app:
-  firebase:
-    service-account-path: ${FIREBASE_SERVICE_ACCOUNT_PATH:firebase-service-account.json}
-    project-id: ${FIREBASE_PROJECT_ID:apj-true-life}
-  jwt:
-    secret: ${JWT_SECRET:apj-true-life-super-secret-key-change-in-production-must-be-256-bits}
-    expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+---
+# LOCAL PROFILE — uses docker-compose.dev.yml Postgres
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev&prepareThreshold=0
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    url: jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev
 
-logging:
-  level:
-    com.apjtruelife: INFO
-    org.springframework.security: WARN
+jwt:
+  private-key: "LOCAL_DEV_STUB_REPLACE_WITH_GENERATED_RS256_PRIVATE_KEY"
+  public-key: "LOCAL_DEV_STUB_REPLACE_WITH_GENERATED_RS256_PUBLIC_KEY"
+
+otp:
+  hash-pepper: "local-dev-pepper-not-for-production"
+
+sms:
+  provider: mock
+
+---
+# RAILWAY PROFILE — all secrets injected via Railway environment variables
+spring:
+  config:
+    activate:
+      on-profile: railway
+  datasource:
+    # ADR-012: prepareThreshold=0 required for Supavisor transaction-mode pooling
+    url: ${DATABASE_URL_RUNTIME}?prepareThreshold=0
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    url: ${DATABASE_URL_SESSION}
