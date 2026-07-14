@@ -1,0 +1,58 @@
+name: apj_true_life
+description: APJ TRUE LIFE — Patient Mobile App (Ayurvedic Medical Centre)
+version: 2.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase Auth (Patient authentication)
+  firebase_core: ^3.1.0
+  firebase_auth: ^5.1.0
+  google_sign_in: ^6.2.1
+  firebase_messaging: ^15.0.0
+
+  # Supabase (data access via Firebase JWT)
+  supabase_flutter: ^2.5.0
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # HTTP client
+  dio: ^5.4.3
+
+  # Navigation
+  go_router: ^14.2.0
+
+  # UI
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.10
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  intl: ^0.19.0
+
+  # Utils
+  flutter_dotenv: ^5.1.0
+  shared_preferences: ^2.2.3
+  flutter_secure_storage: ^9.2.2
+  connectivity_plus: ^6.0.3
+
+  # Sentry
+  sentry_flutter: ^8.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  riverpod_generator: ^2.4.0
+  build_runner: ^2.4.11
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env

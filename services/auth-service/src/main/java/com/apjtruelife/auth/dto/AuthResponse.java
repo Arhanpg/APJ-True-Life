@@ -1,19 +1,18 @@
 package com.apjtruelife.auth.dto;
 
-import com.apjtruelife.auth.model.User;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.util.UUID;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class AuthResponse {
-    private boolean success;
-    private String jwt;
-    private UUID userId;
-    private String firebaseUid;
-    private User.UserRole role;
-    private boolean isNewUser;
-    private String message;
+    private String accessToken;
+    private String refreshToken;
+    private UUID doctorId;
+    private String role;
+    private String name;
+    private String email;
 }

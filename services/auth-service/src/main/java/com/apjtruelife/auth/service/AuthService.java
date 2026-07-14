@@ -1,119 +1,169 @@
 package com.apjtruelife.auth.service;
 
-import com.apjtruelife.auth.dto.AuthResponse;
-import com.apjtruelife.auth.dto.RegisterRequest;
-import com.apjtruelife.auth.dto.UserDto;
-import com.apjtruelife.auth.model.User;
-import com.apjtruelife.auth.repository.UserRepository;
-import com.google.firebase.auth.FirebaseToken;
+import com.apjtruelife.auth.dto.*;
+import com.apjtruelife.auth.model.Doctor;
+import com.apjtruelife.auth.model.RefreshToken;
+import com.apjtruelife.auth.repository.DoctorRepository;
+import com.apjtruelife.auth.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.MessageDigest;
 import java.time.OffsetDateTime;
-import java.util.Optional;
+import java.util.Base64;
 import java.util.UUID;
 
+/**
+ * Auth service v2 — Doctor/Admin authentication only.
+ * Patients use Firebase Auth directly (not this service).
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final FirebaseTokenService firebaseTokenService;
+    private final DoctorRepository doctorRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    @Value("${jwt.refresh-token-expiry-days:7}")
+    private int refreshTokenExpiryDays;
 
     /**
-     * Verifies a Firebase ID token and returns a custom JWT.
-     * If the user does not exist, creates a new PATIENT record.
+     * Doctor login — validates email + password, returns JWT + refresh token.
      */
     @Transactional
-    public AuthResponse verifyAndLogin(String idToken) {
-        FirebaseToken firebaseToken = firebaseTokenService.verifyToken(idToken);
-        String firebaseUid = firebaseToken.getUid();
+    public AuthResponse login(LoginRequest request) {
+        Doctor doctor = doctorRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 
-        Optional<User> existingUser = userRepository.findByFirebaseUid(firebaseUid);
-        boolean isNewUser = existingUser.isEmpty();
+        if (!doctor.getIsActive()) {
+            throw new IllegalStateException("Account is deactivated");
+        }
 
-        User user;
-        if (isNewUser) {
-            // Auto-create PATIENT for first-time OTP login
-            String phoneNumber = firebaseTokenService.getPhoneNumber(firebaseToken);
-            user = User.builder()
-                    .firebaseUid(firebaseUid)
-                    .role(User.UserRole.PATIENT)
-                    .phoneNumber(phoneNumber)
-                    .email((String) firebaseToken.getClaims().get("email"))
-                    .isActive(true)
-                    .build();
-            user = userRepository.save(user);
-            log.info("New PATIENT user created for Firebase UID: {}", firebaseUid);
-        } else {
-            user = existingUser.get();
-            if (!user.getIsActive()) {
-                throw new IllegalStateException("User account is deactivated");
-            }
+        if (!passwordEncoder.matches(request.getPassword(), doctor.getPasswordHash())) {
+            throw new IllegalArgumentException("Invalid email or password");
         }
 
         // Update last login
-        userRepository.updateLastLogin(user.getId(), OffsetDateTime.now());
+        doctorRepository.updateLastLogin(doctor.getId(), OffsetDateTime.now());
 
-        String jwt = jwtService.generateToken(user);
-        log.info("JWT issued for user {} with role {}", user.getId(), user.getRole());
+        String accessToken = jwtService.generateAccessToken(doctor);
+        String refreshToken = generateRefreshToken(doctor.getId());
+
+        log.info("Doctor login successful: {} (role: {})", doctor.getEmail(), doctor.getRole());
 
         return AuthResponse.builder()
-                .success(true)
-                .jwt(jwt)
-                .userId(user.getId())
-                .firebaseUid(user.getFirebaseUid())
-                .role(user.getRole())
-                .isNewUser(isNewUser)
-                .message(isNewUser ? "New user created" : "Login successful")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .doctorId(doctor.getId())
+                .role(doctor.getRole().name().toLowerCase())
+                .name(doctor.getName())
+                .email(doctor.getEmail())
                 .build();
     }
 
     /**
-     * Registers a DOCTOR user (called when doctor is added via Firebase Console).
+     * Refresh access token using refresh token.
+     * Implements rotation: old refresh token is revoked, new one issued.
      */
     @Transactional
-    public AuthResponse registerDoctor(RegisterRequest request) {
-        if (userRepository.existsByFirebaseUid(request.getFirebaseUid())) {
-            throw new IllegalArgumentException("User with this Firebase UID already exists");
+    public AuthResponse refresh(String refreshTokenValue) {
+        String tokenHash = hashToken(refreshTokenValue);
+        RefreshToken storedToken = refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+
+        if (!storedToken.isValid()) {
+            // Possible token reuse attack — revoke all tokens for this doctor
+            refreshTokenRepository.revokeAllByDoctorId(storedToken.getDoctorId());
+            throw new IllegalArgumentException("Refresh token expired or revoked");
         }
 
-        User user = User.builder()
-                .firebaseUid(request.getFirebaseUid())
-                .role(User.UserRole.DOCTOR)
+        // Revoke old token
+        storedToken.setIsRevoked(true);
+        storedToken.setRevokedAt(OffsetDateTime.now());
+        refreshTokenRepository.save(storedToken);
+
+        // Issue new tokens
+        Doctor doctor = doctorRepository.findById(storedToken.getDoctorId())
+                .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+
+        if (!doctor.getIsActive()) {
+            throw new IllegalStateException("Account is deactivated");
+        }
+
+        String accessToken = jwtService.generateAccessToken(doctor);
+        String newRefreshToken = generateRefreshToken(doctor.getId());
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(newRefreshToken)
+                .doctorId(doctor.getId())
+                .role(doctor.getRole().name().toLowerCase())
+                .name(doctor.getName())
+                .email(doctor.getEmail())
+                .build();
+    }
+
+    /**
+     * Logout — revoke all refresh tokens for the doctor.
+     */
+    @Transactional
+    public void logout(UUID doctorId) {
+        refreshTokenRepository.revokeAllByDoctorId(doctorId);
+        log.info("All refresh tokens revoked for doctor: {}", doctorId);
+    }
+
+    /**
+     * Register a new doctor (admin-only operation).
+     */
+    @Transactional
+    public DoctorDto registerDoctor(RegisterDoctorRequest request) {
+        if (doctorRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email already registered");
+        }
+
+        Doctor doctor = Doctor.builder()
                 .email(request.getEmail())
+                .name(request.getName())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .role(Doctor.DoctorRole.valueOf(request.getRole().toUpperCase()))
                 .isActive(true)
                 .build();
-        user = userRepository.save(user);
-        log.info("DOCTOR user registered: {}", user.getId());
 
-        String jwt = jwtService.generateToken(user);
-        return AuthResponse.builder()
-                .success(true)
-                .jwt(jwt)
-                .userId(user.getId())
-                .firebaseUid(user.getFirebaseUid())
-                .role(user.getRole())
-                .isNewUser(true)
-                .message("Doctor registered successfully")
+        doctor = doctorRepository.save(doctor);
+        log.info("New {} registered: {}", doctor.getRole(), doctor.getEmail());
+
+        return DoctorDto.fromDoctor(doctor);
+    }
+
+    private String generateRefreshToken(UUID doctorId) {
+        String rawToken = UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString();
+        String tokenHash = hashToken(rawToken);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .tokenHash(tokenHash)
+                .doctorId(doctorId)
+                .expiresAt(OffsetDateTime.now().plusDays(refreshTokenExpiryDays))
+                .isRevoked(false)
                 .build();
+
+        refreshTokenRepository.save(refreshToken);
+        return rawToken;
     }
 
-    @Transactional(readOnly = true)
-    public UserDto getUserById(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-        return UserDto.fromUser(user);
-    }
-
-    @Transactional(readOnly = true)
-    public UserDto getUserByFirebaseUid(String firebaseUid) {
-        User user = userRepository.findByFirebaseUid(firebaseUid)
-                .orElseThrow(() -> new IllegalArgumentException("User not found for Firebase UID: " + firebaseUid));
-        return UserDto.fromUser(user);
+    private String hashToken(String token) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(token.getBytes());
+            return Base64.getEncoder().encodeToString(hash);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to hash token", e);
+        }
     }
 }

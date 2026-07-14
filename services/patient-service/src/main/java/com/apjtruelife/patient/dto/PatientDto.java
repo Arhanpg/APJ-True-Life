@@ -1,51 +1,54 @@
 package com.apjtruelife.patient.dto;
 
 import com.apjtruelife.patient.model.Patient;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.Period;
 import java.util.UUID;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class PatientDto {
     private UUID id;
-    private UUID userId;
+    private String firebaseUid;
     private String fullName;
+    private String email;
+    private String phone;
+    private String photoUrl;
     private LocalDate dateOfBirth;
-    private Integer age;
-    private Patient.Gender gender;
+    private String gender;
     private String bloodGroup;
     private String address;
     private String emergencyContact;
-    private String profileImageUrl;
     private String prakriti;
-    private String[] allergies;
     private String patientCode;
-    private UUID createdByDoctorId;
+    private Boolean consentGiven;
+    private OffsetDateTime consentAt;
+    private String consentVersion;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 
     public static PatientDto fromPatient(Patient patient) {
-        int age = Period.between(patient.getDateOfBirth(), LocalDate.now()).getYears();
         return PatientDto.builder()
                 .id(patient.getId())
-                .userId(patient.getUserId())
+                .firebaseUid(patient.getFirebaseUid())
                 .fullName(patient.getFullName())
+                .email(patient.getEmail())
+                .phone(patient.getPhone())
+                .photoUrl(patient.getPhotoUrl())
                 .dateOfBirth(patient.getDateOfBirth())
-                .age(age)
-                .gender(patient.getGender())
+                .gender(patient.getGender() != null ? patient.getGender().name().toLowerCase() : null)
                 .bloodGroup(patient.getBloodGroup())
                 .address(patient.getAddress())
                 .emergencyContact(patient.getEmergencyContact())
-                .profileImageUrl(patient.getProfileImageUrl())
                 .prakriti(patient.getPrakriti())
-                .allergies(patient.getAllergies())
                 .patientCode(patient.getPatientCode())
-                .createdByDoctorId(patient.getCreatedByDoctorId())
+                .consentGiven(patient.getConsentGiven())
+                .consentAt(patient.getConsentAt())
+                .consentVersion(patient.getConsentVersion())
                 .createdAt(patient.getCreatedAt())
                 .updatedAt(patient.getUpdatedAt())
                 .build();

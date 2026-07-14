@@ -1,70 +1,110 @@
 package com.apjtruelife.auth.service;
 
-import com.apjtruelife.auth.model.User;
+import com.apjtruelife.auth.model.Doctor;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.*;
 
+/**
+ * JWT Service using RS256 (asymmetric key pair).
+ * v2: issuer is 'apj-auth' to distinguish from Firebase tokens.
+ * Access tokens: 15 minutes TTL.
+ */
 @Service
 @Slf4j
 public class JwtService {
 
-    @Value("${app.jwt.secret}")
-    private String jwtSecret;
+    private static final String ISSUER = "apj-auth";
 
-    @Value("${app.jwt.expiration-ms}")
-    private long jwtExpirationMs;
+    @Value("${jwt.private-key}")
+    private String privateKeyPem;
 
-    public String generateToken(User user) {
+    @Value("${jwt.public-key}")
+    private String publicKeyPem;
+
+    @Value("${jwt.access-token-expiry-minutes:15}")
+    private int accessTokenExpiryMinutes;
+
+    /**
+     * Generate RS256 JWT for doctor/admin.
+     */
+    public String generateAccessToken(Doctor doctor) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", user.getId().toString());
-        claims.put("role", user.getRole().name());
-        claims.put("firebaseUid", user.getFirebaseUid());
-        if (user.getPhoneNumber() != null) claims.put("phone", user.getPhoneNumber());
-        if (user.getEmail() != null) claims.put("email", user.getEmail());
+        claims.put("role", doctor.getRole().name().toLowerCase());
+        claims.put("name", doctor.getName());
+        claims.put("email", doctor.getEmail());
+
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + (long) accessTokenExpiryMinutes * 60 * 1000);
 
         return Jwts.builder()
-                .subject(user.getFirebaseUid())
+                .issuer(ISSUER)
+                .subject(doctor.getId().toString())
                 .claims(claims)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(getSigningKey())
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(getPrivateKey())
                 .compact();
     }
 
+    /**
+     * Validate RS256 JWT and return claims.
+     */
     public Claims validateToken(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .requireIssuer(ISSUER)
+                .verifyWith(getPublicKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
 
-    public String extractFirebaseUid(String token) {
-        return validateToken(token).getSubject();
+    /**
+     * Extract doctor ID from token subject.
+     */
+    public UUID extractDoctorId(String token) {
+        return UUID.fromString(validateToken(token).getSubject());
     }
 
+    /**
+     * Extract role from token.
+     */
     public String extractRole(String token) {
         return validateToken(token).get("role", String.class);
     }
 
-    public UUID extractUserId(String token) {
-        String userIdStr = validateToken(token).get("userId", String.class);
-        return UUID.fromString(userIdStr);
+    public PublicKey getPublicKey() {
+        try {
+            String cleaned = publicKeyPem
+                    .replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----", "")
+                    .replaceAll("\\s", "");
+            byte[] decoded = Base64.getDecoder().decode(cleaned);
+            return KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoded));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load RS256 public key", e);
+        }
     }
 
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+    private PrivateKey getPrivateKey() {
+        try {
+            String cleaned = privateKeyPem
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----", "")
+                    .replaceAll("\\s", "");
+            byte[] decoded = Base64.getDecoder().decode(cleaned);
+            return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decoded));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load RS256 private key", e);
+        }
     }
 }

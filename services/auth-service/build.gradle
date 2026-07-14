@@ -1,12 +1,11 @@
 plugins {
-    id 'org.springframework.boot' version '3.2.5'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.springframework.boot' version '3.3.0'
+    id 'io.spring.dependency-management' version '1.1.5'
     id 'java'
 }
 
 group = 'com.apjtruelife'
-version = '1.0.0'
-javaVersion = '21'
+version = '2.0.0'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -25,10 +24,15 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
-    implementation 'com.google.firebase:firebase-admin:9.3.0'
+
+    // RS256 JWT (asymmetric key signing)
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+    // BCrypt for password hashing
+    implementation 'org.springframework.security:spring-security-crypto'
+
     runtimeOnly 'org.postgresql:postgresql'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

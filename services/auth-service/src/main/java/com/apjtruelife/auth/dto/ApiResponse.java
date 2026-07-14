@@ -1,41 +1,29 @@
 package com.apjtruelife.auth.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-import lombok.Data;
-
-import java.time.OffsetDateTime;
+import lombok.*;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     private boolean success;
-    private T data;
     private String message;
-    private ErrorDetails error;
-    @Builder.Default
-    private OffsetDateTime timestamp = OffsetDateTime.now();
+    private T data;
 
     public static <T> ApiResponse<T> ok(T data, String message) {
         return ApiResponse.<T>builder()
                 .success(true)
-                .data(data)
                 .message(message)
+                .data(data)
                 .build();
     }
 
-    public static <T> ApiResponse<T> error(String code, String message) {
+    public static <T> ApiResponse<T> error(String message) {
         return ApiResponse.<T>builder()
                 .success(false)
-                .error(ErrorDetails.builder().code(code).message(message).build())
+                .message(message)
+                .data(null)
                 .build();
-    }
-
-    @Data
-    @Builder
-    public static class ErrorDetails {
-        private String code;
-        private String message;
     }
 }

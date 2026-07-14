@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -14,16 +13,16 @@ import java.util.UUID;
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, UUID> {
 
-    Optional<Patient> findByUserId(UUID userId);
+    Optional<Patient> findByFirebaseUid(String firebaseUid);
 
-    Optional<Patient> findByPatientCode(String patientCode);
+    boolean existsByFirebaseUid(String firebaseUid);
 
-    boolean existsByUserId(UUID userId);
+    @Query("SELECT p FROM Patient p WHERE p.isDeleted = false AND " +
+            "(LOWER(p.fullName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "OR LOWER(p.phone) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "OR LOWER(p.patientCode) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Patient> searchPatients(String search, Pageable pageable);
 
-    @Query("SELECT p FROM Patient p WHERE " +
-           "(:search IS NULL OR LOWER(p.fullName) LIKE LOWER(CONCAT('%', :search, '%'))) OR " +
-           "(:search IS NULL OR p.patientCode LIKE CONCAT('%', :search, '%'))")
-    Page<Patient> searchPatients(@Param("search") String search, Pageable pageable);
-
-    Page<Patient> findByCreatedByDoctorId(UUID doctorId, Pageable pageable);
+    @Query("SELECT p FROM Patient p WHERE p.isDeleted = false")
+    Page<Patient> findAllActive(Pageable pageable);
 }

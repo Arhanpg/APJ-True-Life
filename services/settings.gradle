@@ -1,0 +1,14 @@
+// APJ TRUE LIFE — Root Gradle Settings
+// Multi-project build: all Spring Boot microservices
+
+rootProject.name = 'apj-true-life-services'
+
+include 'api-gateway'
+include 'auth-service'
+include 'patient-service'
+include 'doctor-service'
+include 'treatment-service'
+include 'appointment-service'
+include 'chat-service'
+include 'notification-service'
+include 'media-service'
