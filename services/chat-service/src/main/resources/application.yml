@@ -1,50 +1,31 @@
-# APJ TRUE LIFE — chat-service
+# APJ TRUE LIFE — chat-service v2.0
+# STOMP WebSocket real-time messaging.
+
 spring:
   application:
     name: chat-service
   flyway:
     enabled: true
     locations: classpath:db/migration
-    url: ${DATABASE_URL_SESSION}
+    url: ${DATABASE_URL_SESSION:jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev}
+    user: ""
+    password: ""
     baseline-on-migrate: true
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: ${DATABASE_URL_RUNTIME:jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev&prepareThreshold=0}
+    driver-class-name: org.postgresql.Driver
 
 server:
   port: 8086
-
-gateway:
-  internal-secret: ${INTERNAL_GATEWAY_SECRET}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
-
----
-spring:
-  config:
-    activate:
-      on-profile: local
-  datasource:
-    url: jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev&prepareThreshold=0
-    driver-class-name: org.postgresql.Driver
-  flyway:
-    url: jdbc:postgresql://localhost:5432/apjtruelife?user=apjdev&password=apjdev
-
-gateway:
-  internal-secret: local-dev-internal-secret
-
----
-spring:
-  config:
-    activate:
-      on-profile: railway
-  datasource:
-    url: ${DATABASE_URL_RUNTIME}?prepareThreshold=0
-    driver-class-name: org.postgresql.Driver
-  flyway:
-    url: ${DATABASE_URL_SESSION}

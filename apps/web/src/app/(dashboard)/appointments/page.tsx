@@ -1,102 +1,148 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { appointmentsApi, type Appointment } from '@/lib/api';
 
-const HOURS = Array.from({ length: 12 }, (_, i) => `${8 + i}:00`);
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
+  PENDING:     { bg: '#FFF8E7', color: '#C9A84C' },
+  CONFIRMED:   { bg: '#EAF4EC', color: '#1A5C38' },
+  IN_PROGRESS: { bg: '#E3F2FD', color: '#1565C0' },
+  COMPLETED:   { bg: '#E8F5E9', color: '#2E7D52' },
+  CANCELLED:   { bg: '#FFEBEE', color: '#BA1A1A' },
+};
 
 export default function AppointmentsPage() {
-  const [view, setView] = useState<'calendar' | 'list'>('calendar');
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [showNew, setShowNew] = useState(false);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  async function fetchAppointments() {
+    setLoading(true);
+    try {
+      const res = await appointmentsApi.list({ date: selectedDate } as any);
+      const data = (res as any).data;
+      setAppointments(data?.appointments || data || []);
+    } catch (e: any) {
+      setError(e.message || 'Failed to load appointments');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { fetchAppointments(); }, [selectedDate]);
+
+  async function handleStatusUpdate(id: string, status: string) {
+    setUpdatingId(id);
+    try {
+      await appointmentsApi.updateStatus(id, status);
+      await fetchAppointments();
+    } catch (e: any) {
+      alert(`Failed to update status: ${e.message}`);
+    } finally {
+      setUpdatingId(null);
+    }
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700, color: '#004324' }}>Appointments</h1>
+        <div>
+          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#004324' }}>Appointments</h1>
+          <p style={{ fontSize: 13, color: '#707971', marginTop: 4 }}>Manage and track patient appointments</p>
+        </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 8, display: 'flex', overflow: 'hidden' }}>
-            {(['calendar', 'list'] as const).map(v => (
-              <button key={v} onClick={() => setView(v)} style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', background: view === v ? '#1A5C38' : 'transparent', color: view === v ? '#fff' : '#707971', textTransform: 'capitalize' }}>{v === 'calendar' ? '📅 Calendar' : '📋 List'}</button>
-            ))}
-          </div>
-          <button onClick={() => setShowNew(true)} style={{ background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>+ New Appointment</button>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            style={{ padding: '8px 12px', borderRadius: 8, border: '1.5px solid #C0C9BF', fontSize: 14, color: '#111E18' }}
+          />
         </div>
       </div>
 
-      {/* Status Filter */}
-      <div style={{ display: 'flex', gap: 8 }}>
-        {['All', 'Confirmed', 'Pending', 'Cancelled'].map(s => (
-          <button key={s} onClick={() => setFilterStatus(s)} style={{ padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, border: filterStatus === s ? 'none' : '1.5px solid #C0C9BF', cursor: 'pointer', background: filterStatus === s ? '#1A5C38' : 'transparent', color: filterStatus === s ? '#fff' : '#707971' }}>{s}</button>
-        ))}
-      </div>
-
-      {view === 'calendar' ? (
-        <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, overflow: 'hidden' }}>
-          {/* Week header */}
-          <div style={{ display: 'grid', gridTemplateColumns: '60px repeat(7, 1fr)', borderBottom: '1px solid #E1F2E8' }}>
-            <div style={{ padding: '10px 0', fontSize: 11, color: '#707971' }} />
-            {DAYS.map(d => (
-              <div key={d} style={{ padding: '10px 8px', textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#404941', borderLeft: '1px solid #E1F2E8' }}>{d}</div>
-            ))}
-          </div>
-          {/* Time grid */}
-          <div style={{ overflow: 'auto', maxHeight: 500 }}>
-            {HOURS.map(h => (
-              <div key={h} style={{ display: 'grid', gridTemplateColumns: '60px repeat(7, 1fr)', borderBottom: '1px solid #F0F7F2' }}>
-                <div style={{ padding: '10px 8px', fontSize: 11, color: '#707971', textAlign: 'right', flexShrink: 0 }}>{h}</div>
-                {DAYS.map(d => (
-                  <div key={d} style={{ minHeight: 48, borderLeft: '1px solid #F0F7F2' }} />
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, padding: '60px 20px', textAlign: 'center', color: '#707971' }}>
-          <div style={{ fontSize: 48, marginBottom: 8 }}>📅</div>
-          <p style={{ fontWeight: 600, color: '#404941' }}>No appointments</p>
-          <button onClick={() => setShowNew(true)} style={{ marginTop: 16, background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>+ New Appointment</button>
-        </div>
-      )}
-
-      {/* New Appointment Modal */}
-      {showNew && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div style={{ background: '#fff', borderRadius: 16, padding: 32, width: 500, maxWidth: '90vw' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111E18' }}>New Appointment</h2>
-              <button onClick={() => setShowNew(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#707971' }}>×</button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {[['Patient', 'text', 'Search patient...'], ['Date', 'date', ''], ['Type', 'select', '']].map(([label, type]) => (
-                <div key={label}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 4 }}>{label} *</label>
-                  {type === 'select' ? (
-                    <select style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 14 }}>
-                      <option>In-Clinic</option>
-                      <option>Online</option>
-                    </select>
-                  ) : (
-                    <input type={type} placeholder={label} style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 14 }} />
-                  )}
-                </div>
+      <div style={{ background: '#fff', border: '1px solid #E1F2E8', borderRadius: 12, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#F4FAF6', borderBottom: '1px solid #E1F2E8' }}>
+              {['Time', 'Patient', 'Type', 'Reason', 'Status', 'Actions'].map(h => (
+                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#707971', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
               ))}
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#404941', marginBottom: 4 }}>Consultation Type</label>
-                <select style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #C0C9BF', borderRadius: 8, fontSize: 14 }}>
-                  <option>General Consultation</option>
-                  <option>Panchakarma</option>
-                  <option>Follow-up</option>
-                </select>
-              </div>
-              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                <button onClick={() => setShowNew(false)} style={{ flex: 1, border: '1.5px solid #1A5C38', color: '#1A5C38', background: 'transparent', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                <button style={{ flex: 2, background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Create Appointment</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: '#707971' }}>Loading…</td></tr>
+            ) : error ? (
+              <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: '#BA1A1A' }}>{error}</td></tr>
+            ) : appointments.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ padding: 40, textAlign: 'center', color: '#707971' }}>
+                  <div style={{ fontSize: 40, marginBottom: 8 }}>📅</div>
+                  <p>No appointments for {selectedDate}</p>
+                </td>
+              </tr>
+            ) : (
+              appointments.map(a => {
+                const statusStyle = STATUS_COLORS[a.status] || { bg: '#F5F5F5', color: '#707971' };
+                return (
+                  <tr key={a.id} style={{ borderBottom: '1px solid #F0F7F2' }}>
+                    <td style={{ padding: '12px 16px', fontSize: 13, color: '#404941', whiteSpace: 'nowrap' }}>
+                      {a.startTime} – {a.endTime}
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <div style={{ fontWeight: 600, color: '#111E18', fontSize: 14 }}>{a.patientId || '—'}</div>
+                    </td>
+                    <td style={{ padding: '12px 16px', fontSize: 13 }}>
+                      <span style={{ background: a.type === 'ONLINE' ? '#E3F2FD' : '#EAF4EC', color: a.type === 'ONLINE' ? '#1565C0' : '#1A5C38', borderRadius: 6, padding: '3px 8px', fontSize: 12, fontWeight: 600 }}>
+                        {a.type === 'ONLINE' ? '🌐 Online' : '🏥 In-Clinic'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 16px', fontSize: 13, color: '#404941', maxWidth: 200 }}>
+                      <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {a.reason || '—'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <span style={{ background: statusStyle.bg, color: statusStyle.color, borderRadius: 6, padding: '3px 8px', fontSize: 12, fontWeight: 600 }}>
+                        {a.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {a.status === 'PENDING' && (
+                          <button onClick={() => handleStatusUpdate(a.id, 'CONFIRMED')} disabled={updatingId === a.id}
+                            style={{ background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                            ✓ Confirm
+                          </button>
+                        )}
+                        {a.status === 'CONFIRMED' && (
+                          <button onClick={() => handleStatusUpdate(a.id, 'IN_PROGRESS')} disabled={updatingId === a.id}
+                            style={{ background: '#1565C0', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                            ▶ Start
+                          </button>
+                        )}
+                        {a.status === 'IN_PROGRESS' && (
+                          <button onClick={() => handleStatusUpdate(a.id, 'COMPLETED')} disabled={updatingId === a.id}
+                            style={{ background: '#2E7D52', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                            ✓ Complete
+                          </button>
+                        )}
+                        {(a.status === 'PENDING' || a.status === 'CONFIRMED') && (
+                          <button onClick={() => handleStatusUpdate(a.id, 'CANCELLED')} disabled={updatingId === a.id}
+                            style={{ background: '#fff', color: '#BA1A1A', border: '1px solid #FFCDD2', borderRadius: 6, padding: '5px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                            ✕ Cancel
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

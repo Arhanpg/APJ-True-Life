@@ -102,6 +102,31 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok(dto, "Token valid"));
     }
 
+    /**
+     * GET /api/auth/me
+     * Returns the authenticated doctor's profile from the JWT.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<DoctorDto>> me(
+            @RequestHeader("Authorization") String authHeader) {
+        String token = extractToken(authHeader);
+        var claims = jwtService.validateToken(token);
+        UUID doctorId = UUID.fromString(claims.getSubject());
+        String role = claims.get("role", String.class);
+        String name = claims.get("name", String.class);
+        String email = claims.get("email", String.class);
+
+        DoctorDto dto = DoctorDto.builder()
+                .id(doctorId)
+                .role(role)
+                .name(name)
+                .email(email)
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.ok(dto, "Profile retrieved"));
+    }
+
+
     private String extractToken(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Invalid Authorization header");
