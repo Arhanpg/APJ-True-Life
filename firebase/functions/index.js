@@ -1,36 +1,37 @@
-// APJ TRUE LIFE — Firebase Blocking Functions
-// These functions run BEFORE user creation and sign-in events.
-// They inject the 'role: authenticated' custom claim required by Supabase
-// to map Firebase users to the Postgres 'authenticated' role for RLS.
+// APJ TRUE LIFE — Firebase Custom Claims via Admin SDK (Free Spark Plan Compatible)
 //
-// Deploy with: firebase deploy --only functions
-// Prerequisite: Enable "Firebase Authentication with Identity Platform" in Firebase Console.
+// WHY THIS FILE EXISTS:
+// Firebase Functions v2 (beforeUserCreated / beforeUserSignedIn blocking functions)
+// requires the Blaze (pay-as-you-go) plan because they depend on
+// Cloud Build API (cloudbuild.googleapis.com) and
+// Artifact Registry API (artifactregistry.googleapis.com).
+//
+// SOLUTION (No Blaze Required):
+// Instead of deploying Firebase Functions, the 'role: authenticated' custom claim
+// is set by your Spring Boot api-gateway using Firebase Admin SDK.
+// When the api-gateway validates a Firebase ID Token for the first time, it checks
+// for the custom claim. If missing, it calls Admin SDK setCustomUserClaims().
+// This is 100% free and requires NO Firebase Functions deployment.
+//
+// This file is intentionally kept as documentation / fallback only.
+// DO NOT run: firebase deploy --only functions
+// Instead, see: services/api-gateway — ClaimEnrichmentFilter.java
 
-import { beforeUserCreated, beforeUserSignedIn } from 'firebase-functions/v2/identity';
+// ─── ALTERNATIVE: If you ever upgrade to Blaze in the future, use this: ───────
+//
+// import { beforeUserCreated, beforeUserSignedIn } from 'firebase-functions/v2/identity';
+//
+// export const beforecreated = beforeUserCreated((event) => {
+//   return { customClaims: { role: 'authenticated' } };
+// });
+//
+// export const beforesignedin = beforeUserSignedIn((event) => {
+//   return { customClaims: { role: 'authenticated' } };
+// });
+// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Runs before a new user is created in Firebase Auth.
- * Adds role: 'authenticated' custom claim so Supabase RLS treats
- * the user as an authenticated Postgres role.
- */
-export const beforecreated = beforeUserCreated((event) => {
-  return {
-    customClaims: {
-      role: 'authenticated',
-    },
-  };
-});
-
-/**
- * Runs before every sign-in event.
- * Ensures the 'authenticated' role claim is always present,
- * even if it was somehow removed or the user was created before
- * these blocking functions were deployed.
- */
-export const beforesignedin = beforeUserSignedIn((event) => {
-  return {
-    customClaims: {
-      role: 'authenticated',
-    },
-  };
-});
+console.log(
+  'APJ TRUE LIFE: No Firebase Functions needed. ' +
+  'Custom claims are set by the Spring Boot api-gateway on first token validation. ' +
+  'See services/api-gateway/src/main/java/com/apjtrue/gateway/filter/ClaimEnrichmentFilter.java'
+);

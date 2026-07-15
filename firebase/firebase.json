@@ -1,7 +1,3 @@
 {
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs20",
-    "codebase": "apj-true-life"
-  }
+  "_comment": "Functions block is intentionally removed. Deploying Firebase Functions requires the Blaze plan (Cloud Build + Artifact Registry APIs). Custom claims are handled by the Spring Boot api-gateway using Firebase Admin SDK instead. See services/api-gateway/src/main/java/com/apjtrue/gateway/filter/ClaimEnrichmentFilter.java"
 }

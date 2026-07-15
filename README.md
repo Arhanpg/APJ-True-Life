@@ -11,6 +11,47 @@ APJ TRUE LIFE is a full-stack digital health platform for an Ayurvedic Medical C
 
 ---
 
+## ⚠️ Firebase Functions — No Blaze Plan Needed
+
+**DO NOT run `firebase deploy --only functions`.**
+
+Firebase Functions v2 (including `beforeUserCreated` / `beforeUserSignedIn` blocking functions) require the **Blaze (pay-as-you-go) plan** because they depend on:
+- `cloudbuild.googleapis.com` (Cloud Build API)
+- `artifactregistry.googleapis.com` (Artifact Registry API)
+
+If you run `firebase deploy --only functions` on a Spark plan project, you will see:
+```
+Error: Your project must be on the Blaze (pay-as-you-go) plan to complete this command.
+```
+
+### ✅ Solution — Custom Claims via API Gateway (Free, No Firebase Functions)
+
+Instead of Firebase Functions, the `role: authenticated` custom claim required by Supabase RLS is **set by the Spring Boot `api-gateway`** using the Firebase Admin SDK.
+
+**How it works:**
+1. Flutter app signs in via Firebase Auth (Google / Phone OTP) → receives a Firebase ID Token
+2. ID Token is sent as `Authorization: Bearer <token>` to the API Gateway
+3. `ClaimEnrichmentFilter` in `api-gateway` verifies the token
+4. If the token is missing `role: authenticated` claim → Admin SDK calls `setCustomUserClaims(uid, {role: 'authenticated'})`
+5. Flutter calls `await FirebaseAuth.instance.currentUser!.getIdToken(true)` to force-refresh the token
+6. The next ID Token now carries `role: authenticated` → Supabase RLS accepts it
+
+**No Firebase Functions. No Blaze plan. No Cloud Build. No Artifact Registry.**
+
+See implementation: [`services/api-gateway/src/main/java/com/apjtrue/gateway/filter/ClaimEnrichmentFilter.java`](services/api-gateway/src/main/java/com/apjtrue/gateway/filter/ClaimEnrichmentFilter.java)
+
+### Flutter — Force Token Refresh After First API Call
+
+Add this to your Flutter auth repository after the first successful API call:
+
+```dart
+// In apps/mobile/lib/data/repositories/auth_repository.dart
+// After first login, force-refresh the token so the new claim is picked up:
+await FirebaseAuth.instance.currentUser?.getIdToken(true);
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -20,6 +61,8 @@ APJ-True-Life/
 │   └── web/                 # Next.js 14+ — Doctor & Admin dashboard (Tailwind, shadcn/ui)
 ├── services/                # Spring Boot 3.x microservices (Java 21, Gradle)
 │   ├── api-gateway/         # Port 8080 — JWT routing (Firebase + Spring JWT)
+│   │   └── filter/
+│   │       └── ClaimEnrichmentFilter.java  ← sets role:authenticated (NO Firebase Functions needed)
 │   ├── auth-service/        # Port 8081 — Doctor/Admin login (RS256 JWT)
 │   ├── patient-service/     # Port 8082 — Patient profile, sync, deletion
 │   ├── doctor-service/      # Port 8083
@@ -29,7 +72,8 @@ APJ-True-Life/
 │   ├── notification-service/# Port 8087 — Firebase FCM push
 │   └── media-service/       # Port 8088 — Supabase Storage signed URLs
 ├── firebase/
-│   └── functions/           # Firebase blocking functions (custom claims for Supabase RLS)
+│   ├── firebase.json        # Functions block removed (Spark plan safe)
+│   └── functions/           # NOT deployed — kept as reference only
 ├── docs/
 │   └── APJ_TRUE_LIFE_V2_BUILD_PROMPT_GUIDE.md   ← Full AI agent build spec
 ├── docker-compose.dev.yml   # Local Postgres 16 + Adminer
@@ -47,6 +91,7 @@ APJ-True-Life/
 | Backend Services | Spring Boot 3.x, Java 21, Gradle 8.x |
 | **Patient Auth** | **Firebase Auth — Google Sign-In + Phone OTP → Supabase Third-Party JWT** |
 | **Doctor/Admin Auth** | **Custom Spring Boot auth-service — bcrypt + RS256 JWT** |
+| **Custom Claims** | **Spring Boot api-gateway ClaimEnrichmentFilter (Firebase Admin SDK) — NO Firebase Functions** |
 | Database | Supabase Postgres (`bwozwxrzotnlajutxupm`) · 9 migrations applied |
 | File Storage | Supabase Storage — 3 private buckets · signed URLs via media-service |
 | Push Notifications | Firebase Cloud Messaging (FCM) — notification-service only |
@@ -64,8 +109,10 @@ APJ-True-Life/
 PATIENTS (Flutter app)
   └─ Firebase Auth (Google Sign-In OR Phone OTP)
        └─ Firebase ID Token (JWT, 1hr TTL)
-            └─ Passed to Supabase client via accessToken callback
-                 └─ Supabase RLS uses auth.jwt()->>'sub' as patient identity
+            └─ Sent to api-gateway as Bearer token
+                 └─ ClaimEnrichmentFilter sets role:authenticated via Admin SDK (FREE)
+                      └─ Flutter calls getIdToken(true) → refreshed token has the claim
+                           └─ Supabase RLS uses auth.jwt()->>'sub' as patient identity
 
 DOCTORS / ADMINS (Next.js dashboard)
   └─ Spring Boot auth-service (email + password)
@@ -75,6 +122,7 @@ DOCTORS / ADMINS (Next.js dashboard)
 API GATEWAY
   └─ Reads iss claim from Bearer token
        ├─ iss starts with 'https://securetoken.google.com/' → Firebase path (PATIENT)
+       │    └─ ClaimEnrichmentFilter enriches role claim if missing
        └─ iss = 'apj-auth' → Spring JWT path (DOCTOR/ADMIN)
 ```
 
@@ -147,7 +195,7 @@ java --version      # Java 21 (Temurin)
 flutter --version   # Flutter 3.x
 node --version      # Node 20+
 docker --version    # Docker Desktop running
-firebase --version  # npm install -g firebase-tools
+firebase --version  # npm install -g firebase-tools  (for emulator only — NO deploy)
 ```
 
 ### Start local database
@@ -184,6 +232,15 @@ flutter pub get
 flutter run
 ```
 
+### Firebase — Local Emulator Only (Optional)
+
+```bash
+# Use Firebase emulators for local Auth testing only
+# DO NOT run firebase deploy --only functions
+cd firebase
+firebase emulators:start --only auth
+```
+
 ---
 
 ## Development Phases
@@ -191,7 +248,7 @@ flutter run
 | Phase | What Gets Built | Status |
 |---|---|---|
 | **0** | Repo scaffold, Docker, CI, env files, Supabase DB schema | ✅ **Complete** |
-| **1** | Firebase Auth in Flutter + Supabase Third-Party Auth config | 🔜 **Next** |
+| **1** | Firebase Auth in Flutter + Supabase Third-Party Auth config + ClaimEnrichmentFilter | 🔜 **Next** |
 | **2** | Doctor auth-service (Spring Boot) + API Gateway dual-JWT | ⏳ Pending |
 | **3** | Patient profile-sync endpoint + DPDP consent screen in Flutter | ⏳ Pending |
 | **4** | Appointment, treatment, doctor services | ⏳ Pending |
@@ -216,6 +273,7 @@ flutter run
 | Supabase Storage | All buckets private. No direct client access. Signed URLs only. |
 | RLS | Every table has `is_valid_auth_jwt()` as a RESTRICTIVE policy. |
 | Passwords | bcrypt cost 12 for doctor accounts. |
+| Firebase Functions | NOT deployed — Spark plan project. Claims set by api-gateway Admin SDK. |
 
 ---
 

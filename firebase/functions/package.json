@@ -1,6 +1,6 @@
 {
   "name": "apj-true-life-functions",
-  "description": "APJ TRUE LIFE Firebase Cloud Functions — Blocking Auth Functions",
+  "description": "APJ TRUE LIFE — Firebase Functions (NOT deployed — Spark plan compatible)",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
@@ -12,5 +12,8 @@
     "firebase-functions": "^5.0.0"
   },
   "devDependencies": {},
-  "private": true
+  "private": true,
+  "scripts": {
+    "deploy": "echo 'Do NOT deploy functions. Custom claims handled by api-gateway. See README.' && exit 1"
+  }
 }
