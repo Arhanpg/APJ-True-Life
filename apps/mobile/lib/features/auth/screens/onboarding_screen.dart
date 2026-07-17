@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:go_router/go_router.dart';
+import '../../../data/repositories/auth_repository.dart';
 
-/// Onboarding screen — Google Sign-In and Phone OTP options.
+/// Onboarding screen — Google Sign-In and Email/Password options.
 /// Per Build Guide Section 3.1: Patient auth via Firebase Auth.
+///
+/// IMPORTANT: Google Sign-In is routed through AuthRepository (not inline)
+/// so that _enrichClaimsViaGateway() is always called after login.
+/// This fixes the claim-enrichment bug identified in audit §2.5.
 class OnboardingScreen extends StatelessWidget {
-  const OnboardingScreen({super.key});
+  OnboardingScreen({super.key});
+
+  final _authRepository = AuthRepository();
 
   Future<void> _signInWithGoogle(BuildContext context) async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return; // User cancelled
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      if (context.mounted) {
+      final user = await _authRepository.signInWithGoogle();
+      if (user != null && context.mounted) {
         context.go('/consent');
       }
     } catch (e) {
@@ -94,14 +89,14 @@ class OnboardingScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // Phone OTP Button
+              // Email/Password Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton.icon(
-                  onPressed: () => context.push('/phone-otp'),
-                  icon: const Icon(Icons.phone, size: 24),
-                  label: const Text('Continue with Phone', style: TextStyle(fontSize: 16)),
+                  onPressed: () => context.push('/email-auth'),
+                  icon: const Icon(Icons.email, size: 24),
+                  label: const Text('Continue with Email', style: TextStyle(fontSize: 16)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1A5C38),
                     foregroundColor: Colors.white,

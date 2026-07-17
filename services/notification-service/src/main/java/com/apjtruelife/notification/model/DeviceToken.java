@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "device_tokens", schema = "notifications")
+@Table(name = "device_tokens")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class DeviceToken {
 

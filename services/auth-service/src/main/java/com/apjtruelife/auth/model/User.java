@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users", schema = "auth")
+@Table(name = "users", schema = "apj_auth")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,7 +27,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false,
-            columnDefinition = "auth.user_role")
+            columnDefinition = "apj_auth.user_role")
     private UserRole role;
 
     @Column(name = "phone_number", unique = true, length = 20)

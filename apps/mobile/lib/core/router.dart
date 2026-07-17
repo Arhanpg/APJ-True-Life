@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../features/auth/screens/onboarding_screen.dart';
-import '../features/auth/screens/phone_otp_screen.dart';
+import '../features/auth/screens/email_auth_screen.dart';
 import '../features/auth/screens/consent_screen.dart';
 import '../features/auth/screens/profile_completion_screen.dart';
 import '../features/home/screens/home_screen.dart';
@@ -22,7 +22,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final user = FirebaseAuth.instance.currentUser;
       final isOnboarding = state.matchedLocation == '/onboarding';
-      final isPhoneOtp = state.matchedLocation == '/phone-otp';
+      final isEmailAuth = state.matchedLocation == '/email-auth';
       final isSplash = state.matchedLocation == '/';
       final isConsent = state.matchedLocation == '/consent';
       final isProfileCompletion = state.matchedLocation == '/profile-completion';
@@ -31,12 +31,12 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (user == null) {
         // Not signed in — redirect to onboarding
-        if (!isOnboarding && !isPhoneOtp) return '/onboarding';
+        if (!isOnboarding && !isEmailAuth) return '/onboarding';
         return null;
       }
 
       // Signed in — don't show onboarding
-      if (isOnboarding || isPhoneOtp) return '/home';
+      if (isOnboarding || isEmailAuth) return '/home';
       return null;
     },
     routes: [
@@ -46,11 +46,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        builder: (context, state) => OnboardingScreen(),
       ),
       GoRoute(
-        path: '/phone-otp',
-        builder: (context, state) => const PhoneOtpScreen(),
+        path: '/email-auth',
+        builder: (context, state) => const EmailAuthScreen(),
       ),
       GoRoute(
         path: '/consent',

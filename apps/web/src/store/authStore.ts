@@ -1,9 +1,16 @@
 import { create } from 'zustand';
-import type { User } from 'firebase/auth';
+
+/** Dashboard user — Doctor or Admin authenticated via Spring Boot auth-service */
+interface DashboardUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'DOCTOR' | 'ADMIN';
+}
 
 interface AuthState {
-  user: User | null;
-  setUser: (u: User | null) => void;
+  user: DashboardUser | null;
+  setUser: (u: DashboardUser | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({

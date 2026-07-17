@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "phase_medicines", schema = "treatments")
+@Table(name = "phase_medicines")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class PhaseMedicine {
 

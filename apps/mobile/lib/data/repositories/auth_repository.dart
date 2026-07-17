@@ -1,9 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:dio/dio.dart';
-import '../core/dio_client.dart';
+import '../../core/dio_client.dart';
 
 /// AuthRepository — handles all Firebase Auth operations for patients.
+///
+/// Auth methods: Google Sign-In + Email/Password.
+/// No Phone OTP — per audit correction §4.
 ///
 /// CRITICAL: Per README and Build Guide Section 3.1:
 /// - After first login, force-refresh the token so the ClaimEnrichmentFilter's
@@ -50,41 +53,30 @@ class AuthRepository {
     return userCredential.user;
   }
 
-  /// Sign in with Phone OTP (step 1 — send OTP)
-  Future<void> verifyPhoneNumber({
-    required String phoneNumber,
-    required Function(String verificationId) onCodeSent,
-    required Function(FirebaseAuthException) onFailed,
-    required Function(User) onAutoVerified,
-  }) async {
-    await _firebaseAuth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        final result = await _firebaseAuth.signInWithCredential(credential);
-        if (result.user != null) {
-          await _enrichClaimsViaGateway();
-          onAutoVerified(result.user!);
-        }
-      },
-      verificationFailed: onFailed,
-      codeSent: (verificationId, _) => onCodeSent(verificationId),
-      codeAutoRetrievalTimeout: (_) {},
+  /// Sign in with Email + Password
+  Future<User?> signInWithEmail(String email, String password) async {
+    final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
     );
-  }
 
-  /// Sign in with Phone OTP (step 2 — verify OTP)
-  Future<User?> signInWithOtp(String verificationId, String smsCode) async {
-    final credential = PhoneAuthProvider.credential(
-      verificationId: verificationId,
-      smsCode: smsCode,
-    );
-    final result = await _firebaseAuth.signInWithCredential(credential);
-    
     // Force-refresh to pick up role:authenticated claim from ClaimEnrichmentFilter
     await _enrichClaimsViaGateway();
-    
-    return result.user;
+
+    return userCredential.user;
+  }
+
+  /// Register with Email + Password
+  Future<User?> registerWithEmail(String email, String password) async {
+    final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Force-refresh to pick up role:authenticated claim from ClaimEnrichmentFilter
+    await _enrichClaimsViaGateway();
+
+    return userCredential.user;
   }
 
   /// Calls the API Gateway once to trigger ClaimEnrichmentFilter.
@@ -129,8 +121,9 @@ class AuthRepository {
     });
   }
 
-  /// Sign out from Firebase
+  /// Sign out from Firebase + unregister FCM token
   Future<void> signOut() async {
+    // TODO: Call NotificationRepository.unregisterToken() before signing out
     await _googleSignIn.signOut().catchError((_) {});
     await _firebaseAuth.signOut();
   }
@@ -139,6 +132,8 @@ class AuthRepository {
   Future<void> deleteAccount() async {
     final user = currentUser;
     if (user == null) return;
+
+    // TODO: Call NotificationRepository.unregisterToken() before deleting
 
     // Backend: soft-delete + anonymise PII + log consent_audit_log
     await _dio.post('/api/patients/delete-account');

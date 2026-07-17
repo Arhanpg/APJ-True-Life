@@ -11,11 +11,10 @@ import java.util.UUID;
 
 /**
  * Patient entity v2 — linked by firebase_uid.
- * Maps to the internal patients.patients table (service-level schema).
- * The public.patients table (Supabase RLS) is separate.
+ * Maps to public.patients (unified Supabase schema with RLS).
  */
 @Entity
-@Table(name = "patients", schema = "patients")
+@Table(name = "patients")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,7 +29,7 @@ public class Patient {
     @Column(name = "firebase_uid", unique = true, nullable = false)
     private String firebaseUid;
 
-    @Column(name = "full_name")
+    @Column(name = "name")
     private String fullName;
 
     @Column(name = "email")

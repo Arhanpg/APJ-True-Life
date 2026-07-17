@@ -29,7 +29,7 @@ Error: Your project must be on the Blaze (pay-as-you-go) plan to complete this c
 Instead of Firebase Functions, the `role: authenticated` custom claim required by Supabase RLS is **set by the Spring Boot `api-gateway`** using the Firebase Admin SDK.
 
 **How it works:**
-1. Flutter app signs in via Firebase Auth (Google / Phone OTP) → receives a Firebase ID Token
+1. Flutter app signs in via Firebase Auth (Google / Email+Password) → receives a Firebase ID Token
 2. ID Token is sent as `Authorization: Bearer <token>` to the API Gateway
 3. `ClaimEnrichmentFilter` in `api-gateway` verifies the token
 4. If the token is missing `role: authenticated` claim → Admin SDK calls `setCustomUserClaims(uid, {role: 'authenticated'})`
@@ -89,7 +89,7 @@ APJ-True-Life/
 | Patient Mobile App | Flutter 3.x, Dart 3.x, Riverpod 2.x, Dio, go_router |
 | Doctor Web Dashboard | Next.js 14+ (App Router), TypeScript 5.x, Tailwind CSS, shadcn/ui |
 | Backend Services | Spring Boot 3.x, Java 21, Gradle 8.x |
-| **Patient Auth** | **Firebase Auth — Google Sign-In + Phone OTP → Supabase Third-Party JWT** |
+| **Patient Auth** | **Firebase Auth — Google Sign-In + Email/Password → Supabase Third-Party JWT** |
 | **Doctor/Admin Auth** | **Custom Spring Boot auth-service — bcrypt + RS256 JWT** |
 | **Custom Claims** | **Spring Boot api-gateway ClaimEnrichmentFilter (Firebase Admin SDK) — NO Firebase Functions** |
 | Database | Supabase Postgres (`bwozwxrzotnlajutxupm`) · 9 migrations applied |
@@ -107,7 +107,7 @@ APJ-True-Life/
 
 ```
 PATIENTS (Flutter app)
-  └─ Firebase Auth (Google Sign-In OR Phone OTP)
+  └─ Firebase Auth (Google Sign-In OR Email/Password)
        └─ Firebase ID Token (JWT, 1hr TTL)
             └─ Sent to api-gateway as Bearer token
                  └─ ClaimEnrichmentFilter sets role:authenticated via Admin SDK (FREE)
@@ -248,15 +248,15 @@ firebase emulators:start --only auth
 | Phase | What Gets Built | Status |
 |---|---|---|
 | **0** | Repo scaffold, Docker, CI, env files, Supabase DB schema | ✅ **Complete** |
-| **1** | Firebase Auth in Flutter + Supabase Third-Party Auth config + ClaimEnrichmentFilter | 🔜 **Next** |
-| **2** | Doctor auth-service (Spring Boot) + API Gateway dual-JWT | ⏳ Pending |
-| **3** | Patient profile-sync endpoint + DPDP consent screen in Flutter | ⏳ Pending |
-| **4** | Appointment, treatment, doctor services | ⏳ Pending |
-| **5** | Media service (Supabase Storage signed URLs) | ⏳ Pending |
-| **6** | Chat service (STOMP WebSocket) | ⏳ Pending |
-| **7** | Notification service (FCM push) | ⏳ Pending |
-| **8** | Flutter app full data wiring (Riverpod + Dio) | ⏳ Pending |
-| **9** | Next.js dashboard full data wiring | ⏳ Pending |
+| **1** | Firebase Auth in Flutter + Supabase Third-Party Auth config + ClaimEnrichmentFilter | ✅ **Complete** |
+| **2** | Doctor auth-service (Spring Boot) + API Gateway dual-JWT | ✅ **Complete** |
+| **3** | Patient profile-sync endpoint + DPDP consent screen in Flutter | ✅ **Complete** |
+| **4** | Appointment, treatment, doctor services | ✅ **Complete** |
+| **5** | Media service (Supabase Storage signed URLs) | ✅ **Complete** |
+| **6** | Chat service (STOMP WebSocket) | ✅ **Complete** |
+| **7** | Notification service (FCM push) | ✅ **Complete** |
+| **8** | Flutter app full data wiring (Riverpod + Dio) | ✅ **Complete** |
+| **9** | Next.js dashboard full data wiring | 🔜 **In Progress** |
 | **10** | DPDP compliance audit + security VAPT + launch | ⏳ Pending |
 
 ---

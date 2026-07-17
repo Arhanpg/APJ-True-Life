@@ -153,7 +153,7 @@ export default function NewPatientPage() {
             <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111E18', marginBottom: 14 }}>After Creating</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
-                { icon: '📱', text: 'Patient receives SMS with app download link and login OTP' },
+                { icon: '📱', text: 'Patient receives an email invite to download the app and sign in with Email or Google' },
                 { icon: '🌿', text: 'Patient appears in your patient list as Active' },
                 { icon: '📋', text: 'You can then create a treatment plan for this patient' },
               ].map(({ icon, text }) => (

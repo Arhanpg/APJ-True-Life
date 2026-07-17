@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "chat_sessions", schema = "chat")
+@Table(name = "chat_sessions")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ChatSession {
 

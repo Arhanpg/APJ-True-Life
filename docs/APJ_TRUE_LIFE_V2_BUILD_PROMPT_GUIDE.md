@@ -14,7 +14,7 @@
 | Prepared For | APJ TRUE LIFE Ayurvedic Medical Centre — Digital Health Platform |
 | Supabase Project ID | bwozwxrzotnlajutxupm |
 | Firebase Auth Mode | Third-Party Auth via JWT (Firebase Auth → Supabase RLS) |
-| Auth Strategy | **Firebase Auth (Google Sign-In + Phone OTP) for patients · Custom Spring Boot for Doctors/Admins** |
+| Auth Strategy | **Firebase Auth (Google Sign-In + Email/Password) for patients · Custom Spring Boot for Doctors/Admins** |
 | Status | Final — Execute Immediately |
 | Jurisdiction | India (DPDP Act 2023 compliant) |
 | Last Updated | July 2026 |
@@ -55,7 +55,7 @@ APJ-True-Life/
 | Patient App | Flutter 3.x / Dart 3.x, Riverpod 2.x, Dio, go_router | Primary patient interface |
 | Doctor Dashboard | Next.js 14+ (App Router), TypeScript 5.x, Tailwind CSS, shadcn/ui | Doctor + Admin portal |
 | Backend | Spring Boot 3.x, Java 21, Gradle 8.x | Multi-project monorepo |
-| **Patient Auth** | **Firebase Auth (Google Sign-In + Phone OTP)** | **Third-party JWT trusted by Supabase** |
+| **Patient Auth** | **Firebase Auth (Google Sign-In + Email/Password)** | **Third-party JWT trusted by Supabase** |
 | **Doctor/Admin Auth** | **Custom Spring Boot auth-service (password + RS256 JWT)** | **No Firebase Auth for staff** |
 | Database | Supabase Postgres (project: bwozwxrzotnlajutxupm) | Flyway migrations |
 | File Storage | Supabase Storage (private buckets, signed URLs via media-service) | |
@@ -70,7 +70,7 @@ APJ-True-Life/
 
 ## 3. Authentication Architecture — COMPLETE SPECIFICATION
 
-> **CRITICAL DECISION:** The previous architecture used a fully custom Spring Boot auth for patients. This is now CHANGED. Patient authentication uses **Firebase Auth** (Google Sign-In + Phone OTP). Doctor and Admin authentication remains **custom Spring Boot auth-service** (password-based, RS256 JWT). The Supabase project is configured to trust Firebase JWTs as a Third-Party Auth provider.
+> **CRITICAL DECISION:** The previous architecture used a fully custom Spring Boot auth for patients. This is now CHANGED. Patient authentication uses **Firebase Auth** (Google Sign-In + Email/Password). Doctor and Admin authentication remains **custom Spring Boot auth-service** (password-based, RS256 JWT). The Supabase project is configured to trust Firebase JWTs as a Third-Party Auth provider.
 
 ### 3.1 Patient Auth Flow (Firebase Auth → Supabase Third-Party JWT)
 
@@ -78,21 +78,22 @@ APJ-True-Life/
 PATIENT SIGN-UP / SIGN-IN FLOW:
 
 1. Flutter app initialises Firebase SDK (google-services.json)
-2. Patient taps "Continue with Google" OR "Sign in with Phone"
+2. Patient taps "Continue with Google" OR "Continue with Email"
 
    ── Google Sign-In path ──────────────────────────────────────
-   3a. FirebaseAuth.instance.signInWithGoogle()
+   3a. AuthRepository.signInWithGoogle()
    4a. Firebase issues ID Token (RS256 signed, aud = Firebase Project ID)
-   5a. Firebase blocking function runs → injects role: 'authenticated' custom claim
-   6a. Flutter calls FirebaseAuth.instance.currentUser.getIdToken(forceRefresh: false)
-   7a. Token is passed to Supabase client via accessToken async callback
+   5a. AuthRepository._enrichClaimsViaGateway() calls api-gateway
+   6a. ClaimEnrichmentFilter sets role: 'authenticated' via Firebase Admin SDK
+   7a. Flutter calls getIdToken(true) → refreshed token has the claim
 
-   ── Phone OTP path ───────────────────────────────────────────
-   3b. FirebaseAuth.instance.verifyPhoneNumber(phoneNumber)
-   4b. Firebase sends OTP SMS via its DLT-compliant pipeline
-   5b. User enters OTP → FirebaseAuth.instance.signInWithCredential()
-   6b. Firebase issues ID Token with role: 'authenticated' claim
-   7b. Flutter passes token to Supabase client
+   ── Email/Password path ──────────────────────────────────────
+   3b. AuthRepository.signInWithEmail(email, password)
+       OR AuthRepository.registerWithEmail(email, password)
+   4b. Firebase issues ID Token
+   5b. AuthRepository._enrichClaimsViaGateway() calls api-gateway
+   6b. ClaimEnrichmentFilter sets role: 'authenticated' via Firebase Admin SDK
+   7b. Flutter calls getIdToken(true) → refreshed token has the claim
 
 8. Supabase client configured with accessToken: async () => await FirebaseAuth.instance.currentUser?.getIdToken()
 9. Supabase verifies Firebase JWT against Google JWKS: https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com
@@ -149,28 +150,19 @@ public AuthContext validate(String bearerToken) {
 - Add Firebase integration
 - Enter Firebase Project ID
 
-**Step 2 — Firebase Blocking Function (deploy to firebase/functions/):**
-```javascript
-// firebase/functions/index.js
-import { beforeUserCreated, beforeUserSignedIn } from 'firebase-functions/v2/identity';
-
-export const beforecreated = beforeUserCreated((event) => {
-  return {
-    customClaims: {
-      role: 'authenticated', // Required by Supabase to use 'authenticated' Postgres role
-    },
-  };
-});
-
-export const beforesignedin = beforeUserSignedIn((event) => {
-  return {
-    customClaims: {
-      role: 'authenticated',
-    },
-  };
-});
-```
-Deploy with: `firebase deploy --only functions`
+**Step 2 — ⚠️ SUPERSEDED — DO NOT USE Firebase Blocking Functions:**
+> The instructions below are SUPERSEDED. Firebase Blocking Functions require the
+> paid Blaze plan (Cloud Build + Artifact Registry APIs). Instead, the `role: authenticated`
+> custom claim is set by the Spring Boot `api-gateway`'s `ClaimEnrichmentFilter` using
+> the Firebase Admin SDK — no Firebase Functions needed, no Blaze plan needed.
+> See README.md "No Blaze Plan Needed" section for details.
+>
+> ~~```javascript~~
+> ~~// firebase/functions/index.js — DO NOT DEPLOY~~
+> ~~import { beforeUserCreated, beforeUserSignedIn } from 'firebase-functions/v2/identity';~~
+> ~~// ... SUPERSEDED BY ClaimEnrichmentFilter.java in api-gateway~~
+> ~~```~~
+> ~~Deploy with: `firebase deploy --only functions`~~ ← DO NOT RUN THIS
 
 **Step 3 — Supabase RLS helper function (run as migration):**
 ```sql

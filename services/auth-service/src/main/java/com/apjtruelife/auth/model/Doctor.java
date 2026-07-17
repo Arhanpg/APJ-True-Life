@@ -14,7 +14,7 @@ import java.util.UUID;
  * NOT the public.doctors Supabase table.
  */
 @Entity
-@Table(name = "doctors", schema = "auth")
+@Table(name = "doctors", schema = "apj_auth")
 @Getter
 @Setter
 @NoArgsConstructor

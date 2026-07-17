@@ -1,3 +1,3 @@
-// DELETED — use Sidebar.tsx (PascalCase) instead
-// This file is intentionally left as a re-export to avoid import errors
-export { Sidebar } from './Sidebar';
+// Re-export Sidebar component from the canonical location
+// Dashboard layout imports { Sidebar } as a named export
+export { default as Sidebar } from '../Sidebar';

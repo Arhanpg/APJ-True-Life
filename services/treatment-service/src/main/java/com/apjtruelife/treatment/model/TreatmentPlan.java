@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "treatment_plans", schema = "treatments")
+@Table(name = "treatment_plans")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class TreatmentPlan {
 

@@ -18,8 +18,7 @@ build/
 *.ear
 !gradle-wrapper.jar
 .gradle/
-gradle/
-!gradle/wrapper/
+# gradle/wrapper/ must be tracked — do NOT add gradle/ to gitignore
 out/
 .idea/
 *.iml

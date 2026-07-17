@@ -13,7 +13,7 @@ import java.util.UUID;
  * When used, it is marked as revoked and a new one is issued.
  */
 @Entity
-@Table(name = "refresh_tokens", schema = "auth")
+@Table(name = "refresh_tokens", schema = "apj_auth")
 @Getter
 @Setter
 @NoArgsConstructor

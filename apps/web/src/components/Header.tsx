@@ -1,13 +1,16 @@
 'use client';
-import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebase';
+import { authApi } from '@/lib/api';
 
 export default function Header() {
   const router = useRouter();
 
   async function handleLogout() {
-    await signOut(auth);
+    try {
+      await authApi.logout();
+    } catch {
+      // Even if backend logout fails, redirect to login
+    }
     router.push('/login');
   }
 
